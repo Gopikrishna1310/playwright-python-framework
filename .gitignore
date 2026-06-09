@@ -1,0 +1,37 @@
+# Virtual Environment
+.venv/
+
+# PyCharm
+.idea/
+
+# Pytest
+.pytest_cache/
+
+# Reports
+reports/
+test-results/
+playwright-report/
+
+# Screenshots
+screenshots/
+
+# Environment files
+.env
+.env.*
+
+# Python cache
+__pycache__/
+*.pyc
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# ==========================================
+# Company Sensitive Files
+# ==========================================
+config/credentials.py
+config/urls.py
+
+# Uncomment if test_data.py contains company data
+# config/test_data.py
