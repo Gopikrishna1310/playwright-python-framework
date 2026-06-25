@@ -1,536 +1,418 @@
 import re
+import logging
 
-from playwright.sync_api import (
-    expect
-)
+from playwright.sync_api import expect, Page
+
+from pages.common.base_page import BasePage
+from utils.waits import SHORT, DEFAULT, LONG, LOAD
+
+logger = logging.getLogger(__name__)
 
 
-class ProjectsPage:
+class ProjectsPage(BasePage):
 
-    def __init__(self, page):
+    def __init__(self, page: Page):
+        super().__init__(page)
+        self.projects_menu         = page.get_by_role("link", name="Projects")
+        self.create_project_btn    = page.get_by_role("button", name="Create Project")
+        self.delete_toolbar_btn    = page.get_by_role("button", name="Delete")
+        self.projects_heading      = page.get_by_role("heading", name="Projects")
+        self.create_project_heading = page.get_by_role("heading", name="Create Project")
 
-        self.page = page
+    # =========================================================================
+    # PRIVATE
+    # =========================================================================
 
-    # ============================================
+    def _dialog(self):
+        dialog = self.page.get_by_role("dialog")
+        try:
+            self.wait.for_visible(dialog.first, timeout=DEFAULT)
+            return dialog.first
+        except Exception:
+            return self.page
+
+    def _close_summary_popup(self):
+        candidates = self.page.locator("div[role='dialog'] button")
+        n = candidates.count()
+        for i in range(n - 1, -1, -1):
+            btn = candidates.nth(i)
+            try:
+                if btn.is_visible() and btn.is_enabled():
+                    btn.click(timeout=SHORT)
+                    logger.info("[ProjectsPage] Summary popup closed")
+                    return
+            except Exception:
+                continue
+        logger.info("[ProjectsPage] No summary popup to close")
+
+    def _project_row(self, project_name: str):
+        return self.page.get_by_role(
+            "row", name=re.compile(re.escape(project_name))
+        )
+
+    # =========================================================================
     # OPEN PROJECTS PAGE
-    # ============================================
+    # =========================================================================
 
-    def open_projects_page(self):
+    def open_projects_page(self) -> None:
+        self.safe_click(self.projects_menu)
+        self.wait.for_url_contains("/projects", timeout=LOAD)
+        logger.info("[ProjectsPage] Projects page opened")
 
-        self.page.get_by_role(
-            "link",
-            name="Projects"
-        ).click()
+    # =========================================================================
+    # ASSERTIONS
+    # =========================================================================
 
-        print(
-            "\nProjects page opened"
+    def verify_projects_page_opened(self) -> None:
+        expect(self.page).to_have_url(
+            re.compile(r"/projects$"), timeout=LONG
+        )
+        self.verify_visible(self.projects_heading, timeout=LONG)
+        logger.info(
+            f"[ProjectsPage]  Projects page verified: {self.page.url}"
         )
 
-    # ============================================
-    # VALIDATE PROJECTS PAGE
-    # ============================================
+    def verify_create_project_popup_opened(self) -> None:
+        self.verify_visible(self.create_project_heading, timeout=DEFAULT)
+        logger.info("[ProjectsPage]  Create Project popup is open")
 
-    def validate_projects_page_opened(self):
+    def verify_create_project_button_enabled(self) -> None:
+        dialog = self._dialog()
+        btn = dialog.get_by_role("button", name="Create Project")
+        self.verify_enabled(btn, timeout=DEFAULT)
+        logger.info("[ProjectsPage]  Create Project button is enabled")
 
-        expect(
+    def verify_project_in_list(self, project_name: str) -> None:
+        self.verify_visible(
+            self._project_row(project_name).first, timeout=LONG
+        )
+        logger.info(f"[ProjectsPage]  Project visible in list: {project_name}")
+
+    def verify_project_not_in_list(self, project_name: str) -> None:
+        self.verify_count(self._project_row(project_name), 0, timeout=LONG)
+        logger.info(
+            f"[ProjectsPage]  Project not visible in list: {project_name}"
+        )
+
+    def verify_delete_button_enabled(self) -> None:
+        self.verify_enabled(self.delete_toolbar_btn, timeout=DEFAULT)
+        logger.info("[ProjectsPage]  Delete button is enabled")
+
+    def verify_tasks_tab_open(self) -> None:
+        self.verify_visible(
+            self.page.get_by_role("button", name="Export"), timeout=LONG
+        )
+        self.verify_visible(
+            self.page.get_by_role("button", name="Reset"), timeout=LONG
+        )
+        self.verify_visible(
+            self.page.get_by_role("textbox", name="search").first, timeout=LONG
+        )
+        logger.info("[ProjectsPage]  Tasks tab verified (Export, Reset, Search visible)")
+
+    def verify_reset_button_enabled(self) -> None:
+        self.verify_enabled(
+            self.page.get_by_role("button", name="Reset"), timeout=DEFAULT
+        )
+        logger.info("[ProjectsPage]  Reset button is enabled")
+
+    def verify_datasets_tab_open(self) -> None:
+        self.verify_visible(
+            self.page.get_by_role("button", name="Add"), timeout=LONG
+        )
+        logger.info("[ProjectsPage]  Datasets tab opened")
+
+    def verify_add_sync_button_enabled(self) -> None:
+        self.verify_enabled(
+            self.page.get_by_role("button", name="Add/Sync"), timeout=DEFAULT
+        )
+        logger.info("[ProjectsPage]  Add/Sync button is enabled")
+
+    def verify_dataset_in_project(self, dataset_name: str) -> None:
+        self.verify_visible(
             self.page.get_by_role(
-                "heading",
-                name="Projects"
-            )
-        ).to_be_visible()
-
-        print(
-            "\nProjects page validation successful"
+                "row", name=re.compile(re.escape(dataset_name))
+            ).first,
+            timeout=LONG
         )
+        logger.info(f"[ProjectsPage]  Dataset visible in project: {dataset_name}")
 
-    # ============================================
+    def verify_user_in_teams(self, user_name: str) -> None:
+        self.verify_visible(
+            self.page.get_by_role(
+                "row", name=re.compile(re.escape(user_name))
+            ).first,
+            timeout=LONG
+        )
+        logger.info(f"[ProjectsPage]  User visible in Teams: {user_name}")
+
+    def verify_user_not_in_teams(self, user_name: str) -> None:
+        self.verify_count(
+            self.page.get_by_role(
+                "row", name=re.compile(re.escape(user_name))
+            ),
+            0,
+            timeout=LONG
+        )
+        logger.info(f"[ProjectsPage]  User not in Teams: {user_name}")
+
+    def verify_remove_selected_enabled(self) -> None:
+        self.verify_enabled(
+            self.page.get_by_role(
+                "button", name=re.compile(r"Remove Selected")
+            ),
+            timeout=DEFAULT
+        )
+        logger.info("[ProjectsPage]  Remove Selected button is enabled")
+
+    def verify_remove_confirmation_popup_open(self) -> None:
+        self.verify_visible(
+            self.page.get_by_role(
+                "heading", name="Remove Users Confirmation"
+            ),
+            timeout=DEFAULT
+        )
+        logger.info("[ProjectsPage]  Remove Users Confirmation popup is open")
+
+    def verify_remove_button_enabled_in_dialog(self) -> None:
+        dialog = self._dialog()
+        self.verify_enabled(
+            dialog.get_by_role("button", name="Remove"),
+            timeout=DEFAULT
+        )
+        logger.info("[ProjectsPage]  Remove button enabled in confirmation popup")
+
+    # =========================================================================
     # CREATE PROJECT
-    # ============================================
+    # =========================================================================
 
     def create_project(
         self,
-        project_name,
-        datasets,
-        workflow,
-        description=""
-    ):
+        project_name: str,
+        datasets: list,
+        workflow: str,
+        description: str = ""
+    ) -> None:
+        self.safe_click(self.create_project_btn)
 
-        self.page.get_by_role(
-            "button",
-            name="Create Project"
-        ).click()
+        name_input = self.page.get_by_role("textbox", name="Enter Project Name")
+        self.wait.for_visible(name_input, timeout=DEFAULT)
+        self.verify_visible(self.create_project_heading, timeout=DEFAULT)
+        logger.info("[ProjectsPage]  Create Project popup opened")
 
-        print(
-            "\nCreate Project popup opened"
+        self.safe_fill(name_input, project_name)
+        logger.info(f"[ProjectsPage] Project name entered: {project_name}")
+
+        self.safe_click(self.page.get_by_role("button", name="Select Datasets"))
+        first_ds = self.page.locator("div").filter(
+            has_text=re.compile(rf"^{re.escape(datasets[0])}$")
         )
-
-        # ============================================
-        # PROJECT NAME
-        # ============================================
-
-        self.page.get_by_role(
-            "textbox",
-            name="Enter Project Name"
-        ).fill(
-            project_name
-        )
-
-        print(
-            f"\nProject name entered:\n{project_name}"
-        )
-
-        # ============================================
-        # SELECT DATASETS
-        # ============================================
-
-        self.page.get_by_role(
-            "button",
-            name="Select Datasets"
-        ).click()
-
-        self.page.wait_for_timeout(2000)
+        self.wait.for_visible(first_ds, timeout=DEFAULT)
 
         for dataset_name in datasets:
-
-            dataset_locator = self.page.locator(
-                "div"
-            ).filter(
-                has_text=re.compile(
-                    rf"^{dataset_name}$"
-                )
+            ds_locator = self.page.locator("div").filter(
+                has_text=re.compile(rf"^{re.escape(dataset_name)}$")
             )
+            self.safe_check(ds_locator.locator("input[type='checkbox']"))
+            logger.info(f"[ProjectsPage] Dataset selected: {dataset_name}")
 
-            dataset_locator.locator(
-                "input[type='checkbox']"
-            ).check()
-
-            print(
-                f"\nDataset selected:\n{dataset_name}"
+        self.safe_click(
+            self.page.get_by_role(
+                "button", name=re.compile(r"dataset\(s\) selected")
             )
-
-            self.page.wait_for_timeout(1000)
-
-        self.page.get_by_role(
-            "button",
-            name=re.compile(
-                r"dataset\(s\) selected"
-            )
-        ).click()
-
-        # ============================================
-        # SELECT WORKFLOW
-        # ============================================
-
-        self.page.get_by_role(
-            "button",
-            name="Select Workflow"
-        ).click()
-
-        self.page.wait_for_timeout(1000)
-
-        self.page.locator(
-            "div"
-        ).filter(
-            has_text=re.compile(
-                rf"^{workflow}$"
-            )
-        ).click()
-
-        print(
-            f"\nWorkflow selected:\n{workflow}"
         )
 
-        # ============================================
-        # DESCRIPTION
-        # ============================================
+        self.safe_click(self.page.get_by_role("button", name="Select Workflow"))
+        workflow_option = self.page.locator("div").filter(
+            has_text=re.compile(rf"^{re.escape(workflow)}$")
+        )
+        self.wait.for_visible(workflow_option, timeout=DEFAULT)
+        self.safe_click(workflow_option)
+        logger.info(f"[ProjectsPage] Workflow selected: {workflow}")
 
         if description:
-
-            self.page.get_by_role(
-                "textbox",
-                name="Enter Project Description"
-            ).fill(
-                description
+            self.safe_fill(
+                self.page.get_by_role(
+                    "textbox", name="Enter Project Description"
+                ),
+                description,
             )
 
-            print(
-                f"\nProject description entered:\n{description}"
-            )
-
-        # ============================================
-        # CREATE PROJECT
-        # ============================================
-
-        self.page.get_by_role(
-            "button",
-            name="Create Project"
-        ).click()
-
-        print(
-            "\nCreate Project button clicked"
+        # Scope to dialog — toolbar "Create Project" is disabled when popup
+        # is open and would cause a 30s timeout if matched instead
+        dialog_submit = self.page.get_by_role("dialog").get_by_role(
+            "button", name="Create Project"
         )
-
-        self.page.wait_for_timeout(3000)
-
-        # ============================================
-        # VALIDATE PROJECT
-        # ============================================
+        self.safe_click(dialog_submit)
+        logger.info("[ProjectsPage] Create Project submitted")
 
         expect(
-            self.page.get_by_role(
-                "row",
-                name=re.compile(project_name)
-            )
-        ).to_be_visible()
+            self._project_row(project_name).first
+        ).to_be_visible(timeout=LONG)
+        logger.info(f"[ProjectsPage] Project created: {project_name}")
 
-        print(
-            f"\nProject validated:\n{project_name}"
-        )
+    # =========================================================================
+    # DELETE PROJECT
+    # =========================================================================
 
-    # ============================================
+    def delete_project(self, project_name: str) -> None:
+        self._project_row(project_name).get_by_role("checkbox").check()
+        logger.info(f"[ProjectsPage] Project selected: {project_name}")
+
+        self.safe_click(self.page.get_by_role("button", name="Delete"))
+
+        dialog = self._dialog()
+        confirm_input = dialog.get_by_role("textbox")
+        self.wait.for_visible(confirm_input, timeout=DEFAULT)
+        self.safe_fill(confirm_input, "DELETE")
+
+        self.safe_click(dialog.get_by_role("button", name="Delete"))
+        logger.info(f"[ProjectsPage] Delete confirmed: {project_name}")
+
+        self.verify_count(self._project_row(project_name), 0, timeout=LONG)
+        self._close_summary_popup()
+
+    # =========================================================================
     # OPEN PROJECT
-    # ============================================
+    # =========================================================================
 
-    def open_project(
-        self,
-        project_name
-    ):
+    def open_project(self, project_name: str) -> None:
+        self.safe_click(self.page.get_by_text(project_name, exact=True))
+        logger.info(f"[ProjectsPage] Project opened: {project_name}")
 
-        self.page.get_by_text(
-            project_name
-        ).click()
+    # =========================================================================
+    # TASKS
+    # =========================================================================
 
-        print(
-            f"\nProject opened:\n{project_name}"
-        )
-
-    # ============================================
-    # VALIDATE TASKS PAGE
-    # ============================================
-
-    def validate_tasks_page(self):
-
+    def validate_tasks_page(self) -> None:
         expect(
-            self.page.get_by_role(
-                "button",
-                name="Export"
-            )
-        ).to_be_visible()
-
+            self.page.get_by_role("button", name="Export")
+        ).to_be_visible(timeout=LONG)
         expect(
-            self.page.get_by_role(
-                "button",
-                name="Reset"
-            )
-        ).to_be_visible()
-
+            self.page.get_by_role("button", name="Reset")
+        ).to_be_visible(timeout=LONG)
         expect(
-            self.page.get_by_role(
-                "textbox",
-                name="search"
-            ).first
-        ).to_be_visible()
+            self.page.get_by_role("textbox", name="search").first
+        ).to_be_visible(timeout=LONG)
+        logger.info("[ProjectsPage] Tasks page controls validated")
 
-        print(
-            "\nTasks page controls validated"
-        )
+    def export_project_data(self) -> None:
+        with self.page.expect_download(timeout=LONG):
+            self.safe_click(self.page.get_by_role("button", name="Export"))
+        logger.info("[ProjectsPage] Export completed")
 
-    # ============================================
-    # EXPORT PROJECT DATA
-    # ============================================
-
-    def export_project_data(self):
-
-        with self.page.expect_download():
-
-            self.page.get_by_role(
-                "button",
-                name="Export"
-            ).click()
-
-        print(
-            "\nProject export completed"
-        )
-
-    # ============================================
-    # RESET TASKS
-    # ============================================
-
-    def reset_tasks(
-        self,
-        file_names
-    ):
-
+    def reset_tasks(self, file_names: list) -> None:
         for file_name in file_names:
-
-            self.page.get_by_role(
-                "row",
-                name=re.compile(file_name)
-            ).get_by_role(
-                "checkbox"
-            ).check()
-
-            print(
-                f"\nTask selected:\n{file_name}"
+            row = self.page.get_by_role(
+                "row", name=re.compile(re.escape(file_name))
             )
+            self.safe_check(row.get_by_role("checkbox"))
+            logger.info(f"[ProjectsPage] Task selected: {file_name}")
 
-        self.page.get_by_role(
-            "button",
-            name="Reset"
-        ).click()
+        self.safe_click(self.page.get_by_role("button", name="Reset"))
 
-        self.page.get_by_role(
-            "textbox"
-        ).fill(
-            "RESET"
+        dialog = self._dialog()
+        confirm_input = dialog.get_by_role("textbox")
+        self.wait.for_visible(confirm_input, timeout=DEFAULT)
+        self.safe_fill(confirm_input, "RESET")
+
+        confirm_button = dialog.get_by_role("button", name="Reset")
+        expect(confirm_button).to_be_enabled(timeout=DEFAULT)
+        self.safe_click(confirm_button)
+        self._close_summary_popup()
+        logger.info("[ProjectsPage] Tasks reset completed")
+
+    # =========================================================================
+    # DATASETS TAB
+    # =========================================================================
+
+    def add_dataset_to_project(self, dataset_name: str) -> None:
+        self.safe_click(self.page.get_by_role("tab", name="Datasets"))
+        self.safe_click(self.page.get_by_role("button", name="Add"))
+
+        row = self.page.get_by_role(
+            "row", name=re.compile(re.escape(dataset_name))
         )
+        self.safe_check(row.get_by_role("checkbox"))
+        logger.info(f"[ProjectsPage] Dataset selected in popup: {dataset_name}")
 
-        self.page.get_by_role(
-            "button",
-            name="Reset"
-        ).click()
+        self.safe_click(self.page.get_by_role("button", name="Add/Sync"))
 
-        print(
-            "\nTasks reset completed"
+        expect(
+            self.page.get_by_role(
+                "row", name=re.compile(re.escape(dataset_name))
+            ).first
+        ).to_be_visible(timeout=LONG)
+        logger.info(f"[ProjectsPage] Dataset added to project: {dataset_name}")
+
+    # =========================================================================
+    # TEAMS TAB
+    # =========================================================================
+
+    def add_project_users(self, role: str, users: list) -> None:
+        self.safe_click(self.page.get_by_role("tab", name="Teams"))
+        self.safe_click(self.page.get_by_role("button", name="Add Users"))
+
+        first_row = self.page.get_by_role(
+            "row", name=re.compile(re.escape(users[0]))
         )
-
-        # ============================================
-        # CLOSE RESET SUMMARY POPUP
-        # ============================================
-
-        self.page.locator(
-            "div[role='dialog'] button"
-        ).last.click()
-
-        print(
-            "\nReset summary popup closed"
-        )
-
-        self.page.wait_for_timeout(2000)
-
-    # ============================================
-    # ADD DATASET TO PROJECT
-    # ============================================
-
-    def add_dataset_to_project(
-        self,
-        dataset_name
-    ):
-
-        self.page.get_by_role(
-            "tab",
-            name="Datasets"
-        ).click()
-
-        self.page.get_by_role(
-            "button",
-            name="Add"
-        ).click()
-
-        self.page.get_by_role(
-            "row",
-            name=re.compile(dataset_name)
-        ).get_by_role(
-            "checkbox"
-        ).check()
-
-        self.page.get_by_role(
-            "button",
-            name="Add/Sync"
-        ).click()
-
-        print(
-            f"\nDataset added to project:\n{dataset_name}"
-        )
-
-    # ============================================
-    # ADD PROJECT USERS
-    # ============================================
-
-    def add_project_users(
-        self,
-        role,
-        users
-    ):
-
-        self.page.get_by_role(
-            "tab",
-            name="Teams"
-        ).click()
-
-        self.page.get_by_role(
-            "button",
-            name="Add Users"
-        ).click()
-
-        self.page.wait_for_timeout(1000)
+        self.wait.for_visible(first_row, timeout=DEFAULT)
 
         if role != "ANNOTATOR":
-
-            self.page.get_by_role(
-                "combobox"
-            ).select_option(
-                role
-            )
+            self.safe_select(self.page.get_by_role("combobox"), role)
 
         for user in users:
-
-            self.page.get_by_role(
-                "row",
-                name=re.compile(user)
-            ).get_by_role(
-                "checkbox"
-            ).check()
-
-            print(
-                f"\nUser selected:\n{user}"
+            row = self.page.get_by_role(
+                "row", name=re.compile(re.escape(user))
             )
+            self.safe_check(row.get_by_role("checkbox"))
+            logger.info(f"[ProjectsPage] User selected: {user}")
 
-        self.page.get_by_role(
-            "button",
-            name="Add"
-        ).click()
+        self.safe_click(self.page.get_by_role("button", name="Add"))
 
-        print(
-            f"\n{role} users added successfully"
+        for user in users:
+            expect(
+                self.page.get_by_role(
+                    "row", name=re.compile(re.escape(user))
+                ).first
+            ).to_be_visible(timeout=LONG)
+            logger.info(f"[ProjectsPage] User added to project: {user}")
+
+    def remove_project_users(self, users: list) -> None:
+        self.safe_click(self.page.get_by_role("tab", name="Teams"))
+
+        first_row = self.page.get_by_role(
+            "row", name=re.compile(re.escape(users[0]))
         )
-
-    # ============================================
-    # REMOVE PROJECT USERS
-    # ============================================
-
-    def remove_project_users(
-            self,
-            users
-    ):
-
-        # ========================================
-        # OPEN TEAMS TAB
-        # ========================================
-
-        self.page.get_by_role(
-            "tab",
-            name="Teams"
-        ).click()
-
-        self.page.wait_for_timeout(1000)
-
-        # ========================================
-        # SELECT USERS
-        # ========================================
+        self.wait.for_visible(first_row, timeout=DEFAULT)
 
         for user in users:
-            user_row = self.page.get_by_role(
-                "row",
-                name=re.compile(user)
+            row = self.page.get_by_role(
+                "row", name=re.compile(re.escape(user))
             )
-
-            checkbox = user_row.get_by_role(
-                "checkbox"
-            )
-
-            checkbox.check()
-
-            print(
-                f"\nUser selected for remove:\n{user}"
-            )
-
-        # ========================================
-        # WAIT FOR UI TO UPDATE
-        # ========================================
-
-        self.page.wait_for_timeout(2000)
-
-        # ========================================
-        # REMOVE BUTTON
-        # ========================================
+            self.safe_check(row.get_by_role("checkbox"))
+            logger.info(f"[ProjectsPage] User selected for removal: {user}")
 
         remove_button = self.page.get_by_role(
-            "button",
-            name=re.compile(
-                r"Remove Selected"
+            "button", name=re.compile(r"Remove Selected")
+        )
+        expect(remove_button).to_be_enabled(timeout=DEFAULT)
+        self.safe_click(remove_button)
+
+        dialog = self._dialog()
+        confirm_input = dialog.get_by_role("textbox")
+        self.wait.for_visible(confirm_input, timeout=DEFAULT)
+        self.safe_fill(confirm_input, "DELETE")
+
+        confirm_button = dialog.get_by_role("button", name="Remove")
+        self.safe_click(confirm_button)
+
+        for user in users:
+            self.verify_count(
+                self.page.get_by_role(
+                    "row", name=re.compile(re.escape(user))
+                ),
+                0,
+                timeout=LONG,
             )
-        )
-
-        expect(
-            remove_button
-        ).to_be_enabled()
-
-        remove_button.click()
-
-        print(
-            "\nRemove button clicked"
-        )
-
-        # ========================================
-        # DELETE CONFIRMATION
-        # ========================================
-
-        self.page.get_by_role(
-            "textbox"
-        ).fill(
-            "DELETE"
-        )
-
-        self.page.get_by_role(
-            "button",
-            name="Remove"
-        ).click()
-
-        print(
-            "\nProject users removed successfully"
-        )
-
-    # ============================================
-    # DELETE PROJECT
-    # ============================================
-
-    def delete_project(
-        self,
-        project_name
-    ):
-
-        self.page.get_by_role(
-            "row",
-            name=re.compile(project_name)
-        ).get_by_role(
-            "checkbox"
-        ).check()
-
-        print(
-            f"\nProject selected for delete:\n{project_name}"
-        )
-
-        self.page.get_by_role(
-            "button",
-            name="Delete"
-        ).click()
-
-        self.page.get_by_role(
-            "textbox"
-        ).fill(
-            "DELETE"
-        )
-
-        self.page.get_by_role(
-            "button",
-            name="Delete"
-        ).click()
-
-        print(
-            f"\nProject deleted:\n{project_name}"
-        )
-
-        # ============================================
-        # CLOSE DELETE SUMMARY POPUP
-        # ============================================
-
-        self.page.locator(
-            "div[role='dialog'] button"
-        ).last.click()
-
-        print(
-            "\nDelete summary popup closed"
-        )
-
-        self.page.wait_for_timeout(2000)
+            logger.info(f"[ProjectsPage]  User removed: {user}")

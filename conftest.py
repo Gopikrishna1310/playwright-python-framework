@@ -1,133 +1,72 @@
 import os
-import time
+import logging
 import pytest
 
-from playwright.sync_api import (
-    sync_playwright
-)
+from playwright.sync_api import sync_playwright
 
-# ============================================
-# CREATE SCREENSHOTS DIRECTORY
-# ============================================
+logger = logging.getLogger(__name__)
 
-os.makedirs(
-    "screenshots",
-    exist_ok=True
-)
+os.makedirs("screenshots", exist_ok=True)
+os.makedirs("reports",     exist_ok=True)
 
-# ============================================
-# PLAYWRIGHT PAGE FIXTURE
-# ============================================
+DEFAULT_TIMEOUT    = 30_000
+NAVIGATION_TIMEOUT = 60_000
+SLOW_MO            = int(os.getenv("SLOW_MO", "0"))
+
 
 @pytest.fixture
 def page():
-
     with sync_playwright() as p:
-
-        # ============================================
-        # LAUNCH BROWSER
-        # ============================================
 
         browser = p.chromium.launch(
             headless=False,
-            slow_mo=300
+            slow_mo=SLOW_MO,
         )
-
-        # ============================================
-        # CREATE CONTEXT
-        # ============================================
 
         context = browser.new_context(
-
-            permissions=[
-                "clipboard-read",
-                "clipboard-write"
-            ],
-
-            viewport={
-                "width": 1536,
-                "height": 864
-            }
+            permissions=["clipboard-read", "clipboard-write"],
+            viewport={"width": 1536, "height": 864},
+            ignore_https_errors=True
         )
 
-        # ============================================
-        # GLOBAL TIMEOUTS
-        # ============================================
+        context.set_default_timeout(DEFAULT_TIMEOUT)
+        context.set_default_navigation_timeout(NAVIGATION_TIMEOUT)
 
-        context.set_default_timeout(
-            30000
+        logger.info(
+            f"[conftest] Browser ready | "
+            f"timeout={DEFAULT_TIMEOUT}ms | "
+            f"nav_timeout={NAVIGATION_TIMEOUT}ms | "
+            f"slow_mo={SLOW_MO}ms"
         )
-
-        context.set_default_navigation_timeout(
-            60000
-        )
-
-        # ============================================
-        # CREATE PAGE
-        # ============================================
 
         page = context.new_page()
-
-        # ============================================
-        # MAXIMIZE WINDOW
-        # ============================================
-
-        page.set_viewport_size({
-            "width": 1536,
-            "height": 864
-        })
+        page.set_viewport_size({"width": 1536, "height": 864})
 
         yield page
 
-        # ============================================
-        # CLEANUP
-        # ============================================
-
         context.close()
-
         browser.close()
+        logger.info("[conftest] Browser closed — cleanup complete")
 
 
-# ============================================
-# SCREENSHOT ON FAILURE
-# ============================================
-
-@pytest.hookimpl(hookwrapper=True)
-def pytest_runtest_makereport(
-    item,
-    call
-):
-
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
     outcome = yield
+    report  = outcome.get_result()
 
-    report = outcome.get_result()
-
-    # ============================================
-    # TAKE SCREENSHOT ONLY ON FAILURE
-    # ============================================
-
-    if (
-        report.when == "call"
-        and report.failed
-    ):
-
-        page = item.funcargs.get(
-            "page"
-        )
-
+    if report.when == "call" and report.failed:
+        page = item.funcargs.get("page")
         if page:
-
-            screenshot_name = (
-                f"screenshots/"
-                f"failure_{int(time.time())}.png"
+            safe_test_name = (
+                item.name
+                .replace("/",  "_")
+                .replace("\\", "_")
+                .replace(":",  "_")
+                .replace(" ",  "_")
             )
-
-            page.screenshot(
-                path=screenshot_name,
-                full_page=True
-            )
-
-            print(
-                f"\n📸 Screenshot saved: "
-                f"{screenshot_name}"
-            )
+            screenshot_path = f"screenshots/{safe_test_name}__failure.png"
+            try:
+                page.screenshot(path=screenshot_path, full_page=True)
+                logger.info(f"[conftest]  Screenshot saved → {screenshot_path}")
+            except Exception as e:
+                logger.warning(f"[conftest] Could not save screenshot for '{item.name}': {e}")

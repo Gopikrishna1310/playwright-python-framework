@@ -1,512 +1,217 @@
 import re
+import logging
 
 from playwright.sync_api import Page
 
 from pages.common.base_page import BasePage
+from utils.waits import DEFAULT, LONG, LOAD
+
+logger = logging.getLogger(__name__)
+
+FILES_URL = "https://fmn-qa.tensoract.com/files"
+UPLOAD    = 120_000
 
 
 class FilesPage(BasePage):
 
     def __init__(self, page: Page):
-
         super().__init__(page)
 
-        self.files_menu = page.get_by_role(
-            "link",
-            name="Files"
-        )
-
-    # ============================================
-    # OPEN FILES PAGE
-    # ============================================
-
-    def open_files_page(self):
-
-        self.safe_click(
-            self.files_menu
-        )
-
-        self.page.wait_for_timeout(2000)
-
-        print("\nFiles page opened")
-
-    # ============================================
-    # VALIDATE FILES PAGE
-    # ============================================
-
-    def validate_files_page_opened(self):
-
-        self.page.wait_for_url(
-            "**/files",
-            timeout=60000
-        )
-
-        print(
-            f"\nCurrent URL: {self.page.url}"
-        )
-
-        print(
-            "\nFiles page validation successful"
-        )
-
-    # ============================================
-    # OPEN UPLOAD FILES POPUP
-    # ============================================
-
-    def open_upload_files_popup(self):
-
-        upload_button = self.page.get_by_role(
-            "button",
-            name="Upload Files"
-        )
-
-        self.safe_click(
-            upload_button
-        )
-
-        self.page.wait_for_timeout(2000)
-
-        print(
-            "\nUpload Files popup opened"
-        )
-
-    # ============================================
-    # GET FILE INPUT
-    # ============================================
-
-    def get_file_input(self):
-
-        upload_area = (
-            self.page
-            .get_by_test_id("flowbite-label")
-            .locator("div")
-            .filter(
-                has_text="Click to upload from this device"
-            )
-        )
-
-        upload_area.wait_for(
-            state="visible",
-            timeout=60000
-        )
-
-        return self.page.locator(
-            'input[type="file"]'
-        )
-
-    # ============================================
-    # UPLOAD SINGLE FILE
-    # ============================================
-
-    def upload_single_file(
-        self,
-        file_path
-    ):
-
-        file_input = self.get_file_input()
-
-        file_input.set_input_files(
-            file_path
-        )
-
-        self.page.wait_for_timeout(2000)
-
-        print(
-            f"\nSingle file selected:\n{file_path}"
-        )
-
-    # ============================================
-    # UPLOAD MULTIPLE FILES
-    # ============================================
-
-    def upload_multiple_files(
-        self,
-        file_paths
-    ):
-
-        file_input = self.get_file_input()
-
-        file_input.set_input_files(
-            file_paths
-        )
-
-        self.page.wait_for_timeout(3000)
-
-        print(
-            f"\nMultiple files selected simultaneously:\n{file_paths}"
-        )
-
-        print(
-            f"\nTotal files selected: {len(file_paths)}"
-        )
-
-    # ============================================
-    # UPLOAD INVALID FILE
-    # ============================================
-
-    def upload_invalid_file(
-        self,
-        file_path
-    ):
-
-        file_input = self.get_file_input()
-
-        file_input.set_input_files(
-            file_path
-        )
-
-        self.page.wait_for_timeout(2000)
-
-        print(
-            f"\nInvalid file selected:\n{file_path}"
-        )
-
-    # ============================================
-    # CLICK UPLOAD BUTTON
-    # ============================================
-
-    def click_upload_button(self):
-
-        upload_button = self.page.get_by_role(
-            "button",
-            name="Upload"
-        ).nth(1)
-
-        self.safe_click(
-            upload_button
-        )
-
-        # Upload processing stabilization
-        self.page.wait_for_timeout(5000)
-
-        print(
-            "\nUpload button clicked"
-        )
-
-    # ============================================
-    # VALIDATE UPLOADED FILE
-    # ============================================
-
-    def validate_uploaded_file(
-        self,
-        file_name
-    ):
-
-        uploaded_file = (
-            self.page
-            .get_by_text(file_name)
-            .first
-        )
-
-        uploaded_file.wait_for(
-            state="visible",
-            timeout=60000
-        )
-
-        print(
-            f"\nUploaded file validated:\n{file_name}"
-        )
-
-    # ============================================
-    # VALIDATE INVALID FILE ERROR
-    # ============================================
-
-    def validate_invalid_file_error(self):
-
-        error_message = self.page.get_by_text(
+        self.upload_files_button       = page.get_by_role("button", name="Upload Files")
+        self.popup_upload_button       = page.get_by_role("button", name="Upload").nth(1)
+        self.file_input                = page.locator('input[type="file"]')
+        self.invalid_file_error        = page.get_by_text(
             "Invalid file type. Only allowed file types are permitted."
         )
+        self.popup_close_button        = (
+            page.get_by_role("button")
+            .filter(has_text=re.compile(r"^$"))
+            .last
+        )
+        self.upload_success_toast      = page.get_by_text(
+            "Files uploaded successfully"
+        )
+        self.import_s3_button          = page.get_by_role("button", name="Import from S3")
+        self.s3_integration_dropdown   = page.get_by_role("combobox")
+        self.s3_picker_button          = page.get_by_role("button", name="Click to upload from S3")
+        self.s3_upload_button          = page.get_by_role("button", name="Upload").first
+        self.search_box                = page.get_by_placeholder("search")
+        self.delete_button             = page.get_by_role("button", name="Delete")
+        self.delete_confirmation_input = page.get_by_role("textbox")
+        self.confirm_delete_button     = page.get_by_role("button", name="Delete").last
 
-        error_message.wait_for(
-            state="visible",
-            timeout=60000
+    # =========================================================================
+    # PRIVATE HELPERS
+    # =========================================================================
+
+    def _file_row(self, file_name: str):
+        return self.page.get_by_role(
+            "row",
+            name=re.compile(re.escape(file_name), re.IGNORECASE),
         )
 
-        print(
-            "\nInvalid file type validation successful"
+    # =========================================================================
+    # OPEN FILES PAGE
+    # =========================================================================
+
+    def open_files_page(self) -> None:
+        self.open_url(FILES_URL)
+        logger.info("[FilesPage] Files page opened")
+
+    # =========================================================================
+    # ASSERTIONS
+    # =========================================================================
+
+    def verify_files_page_opened(self) -> None:
+        self.verify_url("/files")
+        self.verify_visible(self.upload_files_button, timeout=LOAD)
+        logger.info("[FilesPage]  Files page verified")
+
+    def verify_upload_success(self) -> None:
+        self.verify_visible(self.upload_success_toast, timeout=LONG)
+        logger.info("[FilesPage]  Upload success toast visible")
+
+    def verify_file_visible(self, file_name: str) -> None:
+        self.verify_visible(self._file_row(file_name).first, timeout=UPLOAD)
+        logger.info(f"[FilesPage]  File visible in table: {file_name}")
+
+    def verify_file_not_visible(self, file_name: str) -> None:
+        self.verify_count(self._file_row(file_name), 0, timeout=LONG)
+        logger.info(f"[FilesPage]  File not in table: {file_name}")
+
+    def verify_invalid_file_error(self) -> None:
+        self.verify_visible(self.invalid_file_error, timeout=DEFAULT)
+        logger.info("[FilesPage]  Invalid file error message visible")
+
+    def verify_s3_integration_visible(self) -> None:
+        self.verify_visible(self.s3_integration_dropdown, timeout=DEFAULT)
+        logger.info("[FilesPage]  S3 integration dropdown visible")
+
+    def verify_s3_integration_available(self) -> None:
+        """
+        Verifies the "Test" S3 integration option exists in the dropdown.
+        Fails immediately with a clear message if not found.
+        """
+        self.verify_enabled(self.s3_integration_dropdown, timeout=DEFAULT)
+        option = self.s3_integration_dropdown.locator("option", has_text="Test")
+        assert option.count() > 0, (
+            "TC_03_06 BLOCKED: 'Test' S3 integration not found in dropdown. "
+            "Go to Integrations → verify the 'Test' S3 integration is configured."
         )
+        logger.info("[FilesPage]  S3 integration 'Test' available")
 
-    # ============================================
-    # OPEN IMPORT FROM S3
-    # ============================================
+    def verify_s3_files_visible(self, file_names: list) -> None:
+        for file_name in file_names:
+            self.verify_file_visible(file_name)
+        logger.info(f"[FilesPage]  All S3 files visible: {file_names}")
 
-    def open_import_from_s3(self):
+    def verify_files_deleted(self, file_names: list) -> None:
+        for file_name in file_names:
+            self.verify_file_not_visible(file_name)
+        logger.info(f"[FilesPage]  All files deleted: {file_names}")
 
-        import_button = self.page.get_by_role(
-            "button",
-            name="Import from S3"
-        )
+    # =========================================================================
+    # UPLOAD POPUP
+    # =========================================================================
 
-        self.safe_click(
-            import_button
-        )
+    def open_upload_files_popup(self) -> None:
+        self.safe_click(self.upload_files_button)
+        self.wait.for_visible(self.popup_upload_button)
+        logger.info("[FilesPage] Upload popup opened")
 
-        self.page.wait_for_timeout(2000)
+    def upload_single_file(self, file_path: str) -> None:
+        self.file_input.set_input_files(file_path)
+        logger.info(f"[FilesPage] File attached: {file_path}")
 
-        print(
-            "\nImport from S3 opened"
-        )
+    def upload_multiple_files(self, file_paths: list) -> None:
+        self.file_input.set_input_files(file_paths)
+        logger.info(f"[FilesPage] {len(file_paths)} files attached")
 
-    # ============================================
-    # SELECT S3 INTEGRATION
-    # ============================================
+    def upload_invalid_file(self, file_path: str) -> None:
+        self.file_input.set_input_files(file_path)
+        logger.info(f"[FilesPage] Invalid file attached: {file_path}")
 
-    def select_s3_integration(self):
+    def click_upload_button(self, expect_popup_close: bool = True) -> None:
+        self.safe_click(self.popup_upload_button)
+        if expect_popup_close:
+            self.verify_hidden(self.popup_upload_button, timeout=UPLOAD)
+        logger.info("[FilesPage] Upload button clicked")
 
-        integration_dropdown = self.page.get_by_role(
-            "combobox"
-        )
+    def close_upload_popup(self) -> None:
+        self.safe_click(self.popup_close_button)
+        self.verify_hidden(self.popup_upload_button, timeout=DEFAULT)
+        logger.info("[FilesPage] Upload popup closed")
 
-        integration_dropdown.wait_for(
-            state="visible",
-            timeout=60000
-        )
+    # =========================================================================
+    # S3 IMPORT
+    # =========================================================================
 
-        integration_dropdown.select_option(
-            "1"
-        )
+    def open_import_from_s3(self) -> None:
+        self.safe_click(self.import_s3_button)
+        logger.info("[FilesPage] Import from S3 opened")
 
-        self.page.wait_for_timeout(2000)
+    def select_s3_integration(self) -> None:
+        self.safe_select(self.s3_integration_dropdown, label="Test")
+        logger.info("[FilesPage] S3 integration 'Test' selected")
 
-        print(
-            "\nS3 integration selected"
-        )
+    def open_s3_file_picker(self) -> None:
+        self.safe_click(self.s3_picker_button)
+        logger.info("[FilesPage] S3 file picker opened")
 
-    # ============================================
-    # OPEN S3 FILE PICKER
-    # ============================================
-
-    def open_s3_file_picker(self):
-
-        s3_upload_button = self.page.get_by_role(
-            "button",
-            name="Click to upload from S3"
-        )
-
-        self.safe_click(
-            s3_upload_button
-        )
-
-        self.page.wait_for_timeout(3000)
-
-        print(
-            "\nS3 file picker opened"
-        )
-
-    # ============================================
-    # SELECT FILES FROM S3
-    # ============================================
-
-    def select_s3_files(self):
-
+    def select_s3_files(self) -> None:
         rows = [19, 20, 21, 22]
-
         for row in rows:
-
             checkbox = self.page.locator(
                 f"tr:nth-child({row}) > .px-3.py-2\\.5.w-16 > .rounded"
             )
+            self.safe_check(checkbox)
+        logger.info("[FilesPage] S3 files selected")
 
-            checkbox.check()
-
-            self.page.wait_for_timeout(500)
-
-        self.page.wait_for_timeout(2000)
-
-        print(
-            "\nS3 files selected"
+    def click_s3_upload_button(self) -> None:
+        self.safe_click(self.s3_upload_button)
+        self.wait.for_hidden(
+            self.page.get_by_role("button", name="Uploading"),
+            timeout=UPLOAD,
         )
+        logger.info("[FilesPage] S3 import upload clicked")
 
-    # ============================================
-    # CLICK S3 UPLOAD BUTTON
-    # ============================================
+    # =========================================================================
+    # SEARCH
+    # =========================================================================
 
-    def click_s3_upload_button(self):
+    def search_file(self, file_name: str) -> None:
+        self.safe_fill(self.search_box, file_name)
+        logger.info(f"[FilesPage] Searched: {file_name}")
 
-        upload_button = self.page.get_by_role(
-            "button",
-            name="Upload"
-        ).first
+    def clear_search(self) -> None:
+        self.search_box.clear(timeout=DEFAULT)
+        logger.info("[FilesPage] Search cleared")
 
-        self.safe_click(
-            upload_button
-        )
+    # =========================================================================
+    # SELECT / DELETE
+    # =========================================================================
 
-        # S3 import processing
-        self.page.wait_for_timeout(5000)
-
-        print(
-            "\nS3 import upload clicked"
-        )
-
-    # ============================================
-    # CLOSE UPLOAD POPUP
-    # ============================================
-
-    def close_upload_popup(self):
-
-        close_button = (
-            self.page
-            .get_by_role("button")
-            .filter(
-                has_text=re.compile(r"^$")
-            )
-            .last
-        )
-
-        self.safe_click(
-            close_button
-        )
-
-        self.page.wait_for_timeout(2000)
-
-        print(
-            "\nUpload popup closed"
-        )
-
-    # ============================================
-    # SELECT FILE CHECKBOX
-    # ============================================
-
-    def select_file_checkbox(
-        self,
-        file_name
-    ):
-
+    def select_file_checkbox(self, file_name: str) -> None:
         self.search_file(file_name)
-
-        file_row = self.page.get_by_role(
-            "row",
-            name=re.compile(
-                re.escape(file_name),
-                re.IGNORECASE
-            )
-        ).first
-
-        file_row.wait_for(
-            state="visible",
-            timeout=60000
-        )
-
-        checkbox = file_row.get_by_role(
-            "checkbox"
-        )
-
-        checkbox.check()
-
-        self.page.wait_for_timeout(2000)
-
+        file_row = self._file_row(file_name).first
+        self.wait.for_visible(file_row, timeout=LONG)
+        self.safe_check(file_row.get_by_role("checkbox"))
         self.clear_search()
+        logger.info(f"[FilesPage] Selected: {file_name}")
 
-        print(
-            f"\nSelected file:\n{file_name}"
-        )
+    def click_delete_button(self) -> None:
+        self.safe_click(self.delete_button)
+        logger.info("[FilesPage] Delete button clicked")
 
-    # ============================================
-    # CLICK DELETE BUTTON
-    # ============================================
+    def enter_delete_confirmation(self) -> None:
+        self.safe_fill(self.delete_confirmation_input, "DELETE")
+        logger.info("[FilesPage] DELETE confirmation entered")
 
-    def click_delete_button(self):
-
-        delete_button = self.page.get_by_role(
-            "button",
-            name="Delete"
-        )
-
-        self.safe_click(
-            delete_button
-        )
-
-        self.page.wait_for_timeout(2000)
-
-        print(
-            "\nDelete button clicked"
-        )
-
-    # ============================================
-    # ENTER DELETE CONFIRMATION
-    # ============================================
-
-    def enter_delete_confirmation(self):
-
-        delete_input = self.page.get_by_role(
-            "textbox"
-        )
-
-        self.safe_fill(
-            delete_input,
-            "DELETE"
-        )
-
-        self.page.wait_for_timeout(1000)
-
-        print(
-            "\nDELETE confirmation entered"
-        )
-
-    # ============================================
-    # CONFIRM DELETE
-    # ============================================
-
-    def confirm_delete(self):
-
-        confirm_button = (
-            self.page
-            .get_by_role(
-                "button",
-                name="Delete"
-            )
-            .last
-        )
-
-        self.safe_click(
-            confirm_button
-        )
-
-        self.page.wait_for_timeout(3000)
-
-        print(
-            "\nDelete confirmed"
-        )
-
-    # ============================================
-    # SEARCH FILE
-    # ============================================
-
-    def search_file(
-        self,
-        file_name
-    ):
-
-        search_box = self.page.get_by_placeholder(
-            "search"
-        )
-
-        self.safe_fill(
-            search_box,
-            file_name
-        )
-
-        self.page.wait_for_timeout(3000)
-
-        print(
-            f"\nSearched file:\n{file_name}"
-        )
-
-    # ============================================
-    # CLEAR SEARCH
-    # ============================================
-
-    def clear_search(self):
-
-        search_box = self.page.get_by_placeholder(
-            "search"
-        )
-
-        search_box.clear()
-
-        self.page.wait_for_timeout(2000)
-
-        print(
-            "\nSearch cleared"
-        )
+    def confirm_delete(self, deleted_files: list = None) -> None:
+        self.safe_click(self.confirm_delete_button)
+        if deleted_files:
+            for file_name in deleted_files:
+                self.verify_count(self._file_row(file_name), 0, timeout=LONG)
+        else:
+            self.wait.for_hidden(self.delete_confirmation_input, timeout=LONG)
+        logger.info("[FilesPage] Delete confirmed")

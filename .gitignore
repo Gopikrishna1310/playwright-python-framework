@@ -27,11 +27,13 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-# ==========================================
+# ==============================================
 # Company Sensitive Files
-# ==========================================
+# ==============================================
+
 config/credentials.py
 config/urls.py
 
-# Uncomment if test_data.py contains company data
+# Uncomment if test_data.py contains company-specific values
 # config/test_data.py
+

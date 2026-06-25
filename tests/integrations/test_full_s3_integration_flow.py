@@ -17,508 +17,196 @@ from config.test_data import (
 from pages.common.login_page import LoginPage
 from pages.common.sidebar_page import SidebarPage
 
-from pages.integrations.s3_integration_page import (
-    S3IntegrationPage
-)
+from pages.integrations.s3_integration_page import S3IntegrationPage
 
-from pages.aws.aws_login_page import (
-    AWSLoginPage
-)
-
-from pages.aws.aws_iam_page import (
-    AWSIAMPage
-)
-
-from pages.aws.aws_role_page import (
-    AWSRolePage
-)
-
-from pages.aws.aws_s3_page import (
-    AWSS3Page
-)
+from pages.aws.aws_login_page import AWSLoginPage
+from pages.aws.aws_iam_page import AWSIAMPage
+from pages.aws.aws_role_page import AWSRolePage
+from pages.aws.aws_s3_page import AWSS3Page
 
 
 @pytest.mark.s3
 def test_full_s3_integration_flow(page):
 
-    # ============================================
+    # =========================================================================
     # LOGIN TO TOOL
-    # ============================================
+    # =========================================================================
 
     login_page = LoginPage(page)
-
     login_page.open_login_page()
+    login_page.login(TOOL_EMAIL, TOOL_PASSWORD)
 
-    login_page.login(
-        TOOL_EMAIL,
-        TOOL_PASSWORD
-    )
-
-    print("\nLogin successful")
-
-    # ============================================
-    # OPEN INTEGRATIONS PAGE
-    # ============================================
+    # =========================================================================
+    # TC_02_01: Open Integrations page
+    # =========================================================================
 
     sidebar_page = SidebarPage(page)
 
+    # When: Click Integrations from sidebar
     sidebar_page.open_integrations_page()
 
-    current_url = page.url
+    # Then: Integrations list page should open
+    assert "s3-connections" in page.url
 
-    print(f"\nCurrent URL: {current_url}")
-
-    assert "s3-connections" in current_url
-
-    print("\nIntegrations page opened successfully")
-
-    # ============================================
-    # OPEN S3 POPUP
-    # ============================================
+    # =========================================================================
+    # TC_02_02: Create a new S3 integration
+    # =========================================================================
 
     s3_page = S3IntegrationPage(page)
 
+    # When: Click New Integration button
     s3_page.open_new_integration_popup()
 
-    print("\nS3 Integration popup opened")
+    # Then: Add S3 Integration popup should be displayed
+    s3_page.verify_popup_opened()
 
-    # ============================================
-    # ENTER BASIC DETAILS
-    # ============================================
+    # When: Enter Integration Title and S3 Bucket Name
+    s3_page.enter_basic_details(INTEGRATION_TITLE, S3_BUCKET_NAME)
 
-    s3_page.enter_basic_details(
-        INTEGRATION_TITLE,
-        S3_BUCKET_NAME
-    )
-
-    print(
-        "\nIntegration details entered successfully"
-    )
-
-    # ============================================
-    # OPEN STEP 2
-    # ============================================
-
+    # When: Open Step 2
     s3_page.open_step_2()
 
-    print(
-        "\nStep 2 opened successfully"
-    )
+    # Then: Generated JSON configuration should be displayed
+    s3_page.verify_policy_json_visible()
 
-    # ============================================
-    # GET REAL POLICY JSON
-    # ============================================
-
+    # When: Click Copy button
     policy_json = s3_page.get_policy_json()
 
-    print(
-        "\nReal policy JSON captured"
-    )
+    # Then: JSON should be copied successfully
+    assert policy_json.startswith("{")
 
-    # ============================================
-    # OPEN AWS PAGE
-    # ============================================
+    # =========================================================================
+    # AWS: IAM Policy
+    # =========================================================================
 
-    # IMPORTANT:
-    # Use SAME browser context
-    # so clipboard permissions are shared
+    # IMPORTANT: same browser context — clipboard permissions are shared
+    aws_page_tab = page.context.new_page()
 
-    aws_page_tab = (
-        page.context.new_page()
-    )
-
-    # ============================================
-    # AWS LOGIN
-    # ============================================
-
-    aws_login_page = AWSLoginPage(
-        aws_page_tab
-    )
-
+    aws_login_page = AWSLoginPage(aws_page_tab)
     aws_login_page.open_aws_login_page()
+    aws_login_page.login_to_aws(AWS_ACCOUNT, AWS_USERNAME, AWS_PASSWORD)
 
-    aws_login_page.login_to_aws(
-        AWS_ACCOUNT,
-        AWS_USERNAME,
-        AWS_PASSWORD
-    )
-
-    print(
-        "\nAWS Login Successful"
-    )
-
-    # ============================================
-    # IAM PAGE
-    # ============================================
-
-    iam_page = AWSIAMPage(
-        aws_page_tab
-    )
-
-    # ============================================
-    # OPEN IAM CONSOLE
-    # ============================================
-
+    iam_page = AWSIAMPage(aws_page_tab)
     iam_page.open_iam_console()
-
-    print(
-        "\nIAM Console opened"
-    )
-
-    # ============================================
-    # OPEN POLICIES PAGE
-    # ============================================
-
     iam_page.open_policies_page()
-
-    print(
-        "\nPolicies page opened"
-    )
-
-    # ============================================
-    # SEARCH POLICY
-    # ============================================
-
-    iam_page.search_policy(
-        S3_BUCKET_NAME
-    )
-
-    print(
-        "\nPolicy searched successfully"
-    )
-
-    # ============================================
-    # OPEN POLICY
-    # ============================================
-
-    iam_page.open_policy(
-        S3_BUCKET_NAME
-    )
-
-    print(
-        "\nPolicy opened successfully"
-    )
-
-    # ============================================
-    # CLICK EDIT POLICY
-    # ============================================
-
+    iam_page.search_policy(S3_BUCKET_NAME)
+    iam_page.open_policy(S3_BUCKET_NAME)
     iam_page.click_edit_policy()
-
-    print(
-        "\nEdit Policy screen opened"
-    )
-
-    # ============================================
-    # REPLACE REAL POLICY JSON
-    # ============================================
-
-    iam_page.replace_policy_json(
-        policy_json
-    )
-
-    print(
-        "\nReal policy JSON replaced successfully"
-    )
-
-    # ============================================
-    # SAVE POLICY
-    # ============================================
-
+    iam_page.replace_policy_json(policy_json)
     iam_page.save_policy()
 
-    print(
-        "\nPolicy saved successfully"
-    )
+    # =========================================================================
+    # TOOL: Step 3 — IAM Role
+    # =========================================================================
 
-    # ============================================
-    # OPEN STEP 3
-    # ============================================
-
+    # When: Open Step 3
     s3_page.open_step_3()
 
-    print(
-        "\nStep 3 opened successfully"
-    )
+    # Then: Account ID and External ID fields should be visible
+    s3_page.verify_account_external_id_fields_visible()
 
-    # ============================================
-    # GET ACCOUNT ID
-    # ============================================
-
+    # When: Copy Account ID and External ID
     account_id = s3_page.get_account_id()
-
-    print(
-        f"\nAccount ID: {account_id}"
-    )
-
-    # ============================================
-    # GET EXTERNAL ID
-    # ============================================
-
     external_id = s3_page.get_external_id()
 
-    print(
-        f"\nExternal ID: {external_id}"
-    )
+    assert account_id != ""
+    assert external_id != ""
 
-    # ============================================
-    # AWS ROLE PAGE
-    # ============================================
+    # =========================================================================
+    # AWS: IAM Role
+    # =========================================================================
 
-    role_page = AWSRolePage(
-        aws_page_tab
-    )
-
-    # ============================================
-    # OPEN ROLES PAGE
-    # ============================================
-
+    role_page = AWSRolePage(aws_page_tab)
     role_page.open_roles_page()
-
-    print(
-        "\nRoles page opened"
-    )
-
-    # ============================================
-    # CLICK CREATE ROLE
-    # ============================================
-
     role_page.click_create_role()
-
-    print(
-        "\nCreate Role page opened"
-    )
-
-    # ============================================
-    # SELECT AWS ACCOUNT
-    # ============================================
-
     role_page.select_aws_account()
-
-    # ============================================
-    # SELECT ANOTHER AWS ACCOUNT
-    # ============================================
-
     role_page.select_another_aws_account()
-
-    # ============================================
-    # ENTER ACCOUNT ID
-    # ============================================
-
-    role_page.enter_account_id(
-        account_id
-    )
-
-    # ============================================
-    # ENABLE EXTERNAL ID
-    # ============================================
-
+    role_page.enter_account_id(account_id)
     role_page.enable_external_id()
-
-    # ============================================
-    # ENTER EXTERNAL ID
-    # ============================================
-
-    role_page.enter_external_id(
-        external_id
-    )
-
-    # ============================================
-    # GO TO PERMISSIONS PAGE
-    # ============================================
-
+    role_page.enter_external_id(external_id)
     role_page.go_to_permissions_page()
-
-    # ============================================
-    # ATTACH POLICY
-    # ============================================
-
-    role_page.attach_policy(
-        S3_BUCKET_NAME
-    )
-
-    # ============================================
-    # ENTER ROLE NAME
-    # ============================================
-
-    role_page.enter_role_name(
-        ROLE_NAME
-    )
-
-    # ============================================
-    # CREATE ROLE
-    # ============================================
-
+    role_page.attach_policy(S3_BUCKET_NAME)
+    role_page.enter_role_name(ROLE_NAME)
     role_page.create_role()
-
-    # ============================================
-    # OPEN CREATED ROLE
-    # ============================================
-
-    role_page.open_created_role(
-        ROLE_NAME
-    )
-
-    # ============================================
-    # COPY ROLE ARN
-    # ============================================
-
+    role_page.open_created_role(ROLE_NAME)
     role_page.copy_role_arn()
 
-    # ============================================
-    # RETURN TO FM TOOL
-    # ============================================
+    # =========================================================================
+    # TOOL: Paste ARN, Step 4 — CORS
+    # =========================================================================
 
     s3_page.switch_to_page(page)
 
-    print(
-        "\nReturned to FM Tool"
-    )
-
-    # ============================================
-    # PASTE ROLE ARN
-    # ============================================
-
+    # When: Paste Role ARN
     s3_page.paste_role_arn()
 
-    # ============================================
-    # OPEN STEP 4
-    # ============================================
-
+    # When: Open Step 4
     s3_page.open_step_4()
 
-    # ============================================
-    # COPY CORS JSON
-    # ============================================
+    # Then: CORS JSON configuration should be displayed
+    s3_page.verify_cors_json_visible()
 
+    # When: Click Copy button
     cors_json = s3_page.copy_cors_json()
 
-    print(
-        f"\nCORS JSON:\n{cors_json}"
-    )
+    # Then: CORS JSON should be copied successfully
+    assert cors_json.startswith("[")
 
-    # ============================================
-    # AWS S3 PAGE
-    # ============================================
+    # =========================================================================
+    # AWS: S3 Bucket CORS
+    # =========================================================================
 
-    s3_aws_page = AWSS3Page(
-        aws_page_tab
-    )
-
-    # ============================================
-    # OPEN S3 CONSOLE
-    # ============================================
-
+    s3_aws_page = AWSS3Page(aws_page_tab)
     s3_aws_page.open_s3_console()
-
-    # ============================================
-    # SEARCH BUCKET
-    # ============================================
-
-    s3_aws_page.search_bucket(
-        S3_BUCKET_NAME
-    )
-
-    # ============================================
-    # OPEN BUCKET
-    # ============================================
-
-    s3_aws_page.open_bucket(
-        S3_BUCKET_NAME
-    )
-
-    # ============================================
-    # OPEN PERMISSIONS TAB
-    # ============================================
-
+    s3_aws_page.search_bucket(S3_BUCKET_NAME)
+    s3_aws_page.open_bucket(S3_BUCKET_NAME)
     s3_aws_page.open_permissions_tab()
-
-    # ============================================
-    # CLICK EDIT CORS
-    # ============================================
-
     s3_aws_page.click_edit_cors()
-
-    # ============================================
-    # REPLACE CORS JSON
-    # ============================================
-
-    s3_aws_page.replace_cors_json(
-        cors_json
-    )
-
-    # ============================================
-    # SAVE CHANGES
-    # ============================================
-
+    s3_aws_page.replace_cors_json(cors_json)
     s3_aws_page.save_changes()
-    # ============================================
-    # RETURN TO FM TOOL
-    # ============================================
+
+    # =========================================================================
+    # TOOL: Create Integration
+    # =========================================================================
 
     s3_page.switch_to_page(page)
 
-    print(
-        "\nReturned to FM Tool"
-    )
-
-    # ============================================
-    # CLICK CREATE INTEGRATION
-    # ============================================
-
+    # When: Click Create button
     s3_page.click_create_integration()
 
-    # ============================================
-    # VALIDATE SUCCESS
-    # ============================================
+    # Then: S3 integration should be created successfully
+    s3_page.verify_integration_created()
 
-    s3_page.validate_integration_created()
-    # ============================================
-    # OPEN RUN TEST POPUP
-    # ============================================
+    # Then: The integration should be visible in the list before proceeding
+    s3_page.verify_integration_visible_in_list(integration_title=INTEGRATION_TITLE)
 
+    # =========================================================================
+    # TC_02_03: Run a test to verify the S3 integration
+    # =========================================================================
+
+    # When: Click Run a Test button
     s3_page.click_run_a_test()
 
-    # ============================================
-    # AWS OBJECTS TAB
-    # ============================================
+    # Then: Test Integration popup should be displayed
+    s3_page.verify_test_popup_opened()
+
+    # =========================================================================
+    # AWS: Get S3 object URL
+    # =========================================================================
 
     s3_aws_page.open_objects_tab()
-
-    # ============================================
-    # OPEN FILE
-    # ============================================
-
     s3_aws_page.open_first_file()
-
-    # ============================================
-    # COPY S3 URI
-    # ============================================
-
     s3_uri = s3_aws_page.copy_s3_uri()
 
-    # ============================================
-    # RETURN TO FM TOOL
-    # ============================================
+    # =========================================================================
+    # TOOL: Run the test
+    # =========================================================================
 
     s3_page.switch_to_page(page)
 
-    # ============================================
-    # ENTER S3 URL
-    # ============================================
-
-    s3_page.enter_s3_url(
-        s3_uri
-    )
-
-    # ============================================
-    # CLICK CHECK BUTTON
-    # ============================================
-
+    # When: Paste S3 URL and click Check
+    s3_page.enter_s3_url(s3_uri)
     s3_page.click_check_button()
 
-    # ============================================
-    # VALIDATE TEST SUCCESS
-    # ============================================
-
-    s3_page.validate_test_success()
+    # Then: Integration test should pass successfully
+    s3_page.verify_test_success()
