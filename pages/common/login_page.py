@@ -10,10 +10,9 @@ class LoginPage:
         self.password_input    = page.get_by_role("textbox", name="Password")
         self.sign_in_button    = page.get_by_role("button",  name="Sign in", exact=True)
         self.sign_In_button    = page.get_by_role("button",  name="Sign In", exact=True)
-        self.organization_card = page.get_by_role("heading", name="Test Company B")
+        self.organization_card = page.get_by_role("heading", name="Select Your Organization")
         self.company_admin_role = page.get_by_role("paragraph").filter(has_text=re.compile(r"^Company Admin$"))
         self.continue_button   = page.get_by_role("button", name="Continue")
-        self.welcome_heading   = page.get_by_role("heading", name="Welcome to Tensoract")
         self.home_sidebar_link = page.get_by_role("link", name="Home")
         self.back_to_login = page.locator("button:has-text('Back to Login')")
         self.home_icon = page.get_by_text("Home")
@@ -23,6 +22,9 @@ class LoginPage:
         self.send_code_button = page.get_by_role('button', name = 'Send Code' )
         self.enter_otp_input = page.locator("div").filter(has_text=re.compile(r"^Enter OTP$"))
 
+    def get_organization_card(self, company_name):
+        return self.page.get_by_role("heading", name=company_name)
+    
     def get_organization_option(self, organization_name):
         return self.page.get_by_text(organization_name, exact=True)
 

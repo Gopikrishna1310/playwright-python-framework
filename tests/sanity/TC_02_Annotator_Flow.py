@@ -8,6 +8,7 @@ def before_each(page):
     url = action_factory.helpers.fetch_dotenv("Execution_url")
     email = action_factory.helpers.fetch_dotenv("annotator_Username")
     password = action_factory.helpers.fetch_dotenv("annotator_Password")
+    company_Name = action_factory.helpers.fetch_dotenv("company_Name")
     diff_email = action_factory.helpers.fetch_dotenv("different_email_for_otp")
     diff_email_password = action_factory.helpers.fetch_dotenv(
         "different_email_for_otp_password"
@@ -22,7 +23,7 @@ def before_each(page):
         diff_email,
         diff_email_password
     )
-    action_factory.login_actions.select_organization("Annotator")
+    action_factory.login_actions.select_organization(company_Name, "Annotator")
     return action_factory
 
 @allure.feature("DataSet")

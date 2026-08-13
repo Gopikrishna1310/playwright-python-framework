@@ -46,8 +46,8 @@ class LoginActions:
         else:
             raise Exception("Organization card is not visible.")
 
-    def select_organization(self, organization_name):
-        self.ui_utils.click_element(self.page_factory.login_page.organization_card)
+    def select_organization(self, company_name, organization_name):
+        self.ui_utils.click_element(self.page_factory.login_page.get_organization_card(company_name))
         self.ui_utils.smart_wait()
         self.ui_utils.click_element(self.page_factory.login_page.get_organization_option(organization_name))
         self.ui_utils.click_element(self.page_factory.login_page.continue_button)

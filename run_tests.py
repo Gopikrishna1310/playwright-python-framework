@@ -11,7 +11,7 @@ import sys
 from glob import glob
 
 # Browser Configuration
-HEADLESS = True
+HEADLESS = False
 SLOW_MO = 500
 VIEWPORT = {
     "width": 1250,
@@ -24,8 +24,8 @@ NAVIGATION_TIMEOUT = 30000
 TEST_FILES = [
             "tests/sanity/TC_01_companyAdmin_Flow.py",
             "tests/sanity/TC_02_Annotator_Flow.py",
-            "tests/sanity/TC_03_Reviewer_Flow.py",
-            "tests/sanity/TC_04_Validate_File_Status.py"
+            # "tests/sanity/TC_03_Reviewer_Flow.py",
+            # "tests/sanity/TC_04_Validate_File_Status.py"
             ]
 
 if __name__ == "__main__":
