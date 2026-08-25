@@ -21,7 +21,7 @@ class AnnotatorPage:
         self.current_task_heading = page.get_by_role("heading", name="Current Tasks")
         self.back_button = page.locator("button[class*='cursor-pointer']")
         self.search_input = page.get_by_placeholder("search")
-        self.transcription = page.locator("tr[class*='reporttr'] td")
+        self.transcription = self.frame.locator("tr[class*='reporttr'] td")
 
 
     def click_project_name(self, project_name):
