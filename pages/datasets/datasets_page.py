@@ -10,13 +10,14 @@ class datasetsPage:
         self.enter_dataset_name = page.get_by_role('textbox', name='Enter Dataset Name' )
         self.select_dataset_type = page.get_by_role('button', name='Select Type' )
         self.create_button = page.get_by_role('button', name='Create' )
-        self.dataset_names_list = page.locator('span[class*="medium break"]')  #page.locator('span[class*="dataset-name"]')
+        self.dataset_names_list = page.locator('span[class*="dataset-name"]') #page.locator('span[class*="dataset-name"]')
         self.dataset_cell = page.locator('th:has-text("Dataset Name")')
         self.upload_files_button = page.get_by_role('button',  name='Upload Files')
         self.upload_files = page.locator('label').filter(has_text='Click to upload from this')
         self.upload_button = page.get_by_role('button', name= 'Upload')
-        self.files_name_list = page.locator("div[class*='break-all']")  #page.locator("div[class*='dataset-file-name']")
+        self.files_name_list = page.locator("button[class*='file-name']")  #page.locator("button[class*='dataset-file-name']")
+        self.dataset_file_name_list = page.locator("div[class*='dataset-names']")
 
 
     def get_dataset_type_option(self, dataset_type_name):
-        return self.page.get_by_text(dataset_type_name, exact=True)
+        return self.page.locator('span').filter(has_text=dataset_type_name )

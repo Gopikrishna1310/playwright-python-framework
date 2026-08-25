@@ -8,6 +8,9 @@ from actions.workflows.workflows_actions import WorkflowsActions
 from actions.projects.projects_actions import ProjectsActions
 from actions.annotator.annotator_actions import AnnotatorActions
 from actions.reviewer.reviewer_actions import ReviewerActions
+from actions.files.files_actions import FilesActions
+from actions.common.common_actions import CommonActions
+
 
 class ActionFactory:
     def __init__(self, page):
@@ -22,3 +25,5 @@ class ActionFactory:
         self.projects_actions = ProjectsActions(page)
         self.annotator_actions = AnnotatorActions(page)
         self.reviewer_actions = ReviewerActions(page)
+        self.files_actions = FilesActions(page)
+        self.common_actions = CommonActions(page)

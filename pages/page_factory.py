@@ -5,6 +5,7 @@ from pages.workflows.workflows_page import WorkflowsPage
 from pages.projects.projects_page import ProjectsPage
 from pages.annotator.annotator_page import AnnotatorPage
 from pages.reviewer.reviewer_page import ReviewerPage
+from pages.files.files_page import FilesPage
 
 class PageFactory:
     def __init__(self, page):
@@ -16,3 +17,4 @@ class PageFactory:
         self.projects_page = ProjectsPage(page)
         self.annotator_page = AnnotatorPage(page)
         self.reviewer_page = ReviewerPage(page)
+        self.files_page = FilesPage(page)

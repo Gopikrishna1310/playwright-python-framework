@@ -38,17 +38,27 @@ class DatasetsActions:
         else:
             raise Exception("Dataset cell is not visible after creating the dataset.")
 
-    def upload_files(self, *file_paths):
+    def upload_files_with_uploadBtn(self, *file_paths):
         self.ui_utils.click_element(self.page_factory.datasets_page.upload_files_button)
         self.ui_utils.smart_wait()
         files = []
         for file_path in file_paths:
             full_path = Path("test_data") / "files" / file_path
-            if not full_path.exists():
-                raise FileNotFoundError(f"File not found: {full_path}")
-            files.append(str(full_path))
+            # Folder
+            if full_path.is_dir():
+                files.extend(
+                    str(file)
+                    for file in full_path.iterdir()
+                    if file.is_file()
+                )
+            # Individual file
+            elif full_path.is_file():
+                files.append(str(full_path))
+            else:
+                raise FileNotFoundError(f"File or folder not found: {full_path}")
         self.page_factory.datasets_page.upload_files.set_input_files(files)
         self.ui_utils.smart_wait()
         self.ui_utils.click_element(self.page_factory.datasets_page.upload_button.nth(1))
         self.ui_utils.smart_wait()
+
         

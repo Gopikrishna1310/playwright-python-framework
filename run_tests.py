@@ -11,21 +11,18 @@ import sys
 from glob import glob
 
 # Browser Configuration
-HEADLESS = False
+HEADLESS = True
 SLOW_MO = 500
 VIEWPORT = {
-    "width": 1250,
-    "height": 700
+    "width": 1260,
+    "height": 900
 }
 DEFAULT_TIMEOUT = 3000
 NAVIGATION_TIMEOUT = 30000
 
 
 TEST_FILES = [
-            "tests/sanity/TC_01_companyAdmin_Flow.py",
-            "tests/sanity/TC_02_Annotator_Flow.py",
-            # "tests/sanity/TC_03_Reviewer_Flow.py",
-            # "tests/sanity/TC_04_Validate_File_Status.py"
+            "tests/files/TC_*.py"
             ]
 
 if __name__ == "__main__":
@@ -34,8 +31,21 @@ if __name__ == "__main__":
         if os.path.exists(folder):
             shutil.rmtree(folder)
     # Run tests
+    test_files = []
+    for test_path in TEST_FILES:
+        if "*" in test_path:
+            test_files.extend(glob(test_path))
+        else:
+            test_files.append(test_path)
+    if not test_files:
+        print("No test files found.")
+        sys.exit(1)
+    print("Tests to execute:")
+    for test in test_files:
+        print(f"  {test}")
     subprocess.run(
-    [sys.executable, "-m", "pytest", "-v", "--alluredir=allure-results"] + TEST_FILES
+        [sys.executable, "-m", "pytest", "-v", "--alluredir=allure-results"]
+        + test_files
     )
     # Generate Allure report
     subprocess.run(

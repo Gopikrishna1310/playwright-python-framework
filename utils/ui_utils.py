@@ -102,6 +102,12 @@ class UIUtils:
         """
         return locator.is_enabled
 
+    def is_element_disabled(self, locator):  
+        """
+        Checks if an element specified by the locator is diabled.
+        """
+        return locator.is_disabled
+
     def grab_text_from_all(self, locator):
         """
         Returns the text of all matching elements as a list.
@@ -136,6 +142,13 @@ class UIUtils:
         )
         self.page.wait_for_timeout(100)
         self.page.mouse.up()
+
+    def wait_for_visible_if_exists(self, locator, timeout=5000):
+        try:
+            locator.wait_for(state="visible", timeout=timeout)
+            return True
+        except Exception:
+            return False
 
     def smart_wait(self, timeout = 20000):
         """

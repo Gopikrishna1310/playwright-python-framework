@@ -47,9 +47,15 @@ class WorkflowsActions:
         self.ui_utils.smart_wait()
         self.ui_utils.click_element(self.page_factory.workflows_page.get_template_option(template_name))
 
-    def nodes_connection_flow(self, node_Name1, position1 , index1, node_Name2, position2, index2):
-        source = self.page_factory.workflows_page.get_node_connector(node_Name1, position1, index1)
-        target = self.page_factory.workflows_page.get_node_connector(node_Name2, position2,  index2)
+    def nodes_connection_flow(self, node_Name1, node_index1, position1 , index1, node_Name2, node_index2, position2, index2):
+        source = self.page_factory.workflows_page.get_node_connector(node_Name1, node_index1, position1, index1)
+        target = self.page_factory.workflows_page.get_node_connector(node_Name2, node_index2, position2, index2)
         self.ui_utils.drag_and_drop(source, target)
+
+    def required_annotator(self, total_ann):
+        self.ui_utils.click_element(self.page_factory.workflows_page.required_annotators)
+        self.ui_utils.fill_input(self.page_factory.workflows_page.required_annotators, total_ann)
+
+
         
 

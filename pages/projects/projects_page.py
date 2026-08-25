@@ -1,4 +1,3 @@
-from os import name
 from utils.ui_utils import UIUtils
 
 class ProjectsPage:
@@ -36,7 +35,7 @@ class ProjectsPage:
             f"td[title='{email}']"
         ).locator("..").locator("td.px-6").first
 
-    def get_file_status(self, file_name, status):
+    def get_file_status(self, file_name):
         return self.page.locator(
             f"td[title='{file_name}'] ~ td div"
-        ).filter(has_text=status)
+        )

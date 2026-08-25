@@ -21,8 +21,14 @@ class ReviewerPage:
         self.current_task_heading = page.get_by_role("heading", name="Current Tasks")
         self.back_button = page.locator("button[class*='cursor-pointer']")
         self.search_input = page.get_by_placeholder("search")
-        self.approve_button = page.get_by_role("button", name="Approve")
+        self.approve_button = page.get_by_role("button", name="Approve").first
         self.approve_task_btn = page.get_by_role("button", name="Approve task")
+        self.reject_button = page.get_by_role('button', name= 'Reject' )
+        self.submit_button = page.get_by_role('button', name= 'Submit' )
+        self.annotation_dropdown = page.locator("div[id*='task-annotator']")
 
     def click_project_name(self, project_name):
         return self.page.get_by_text(project_name, exact=True)
+
+    def click_annotator_dropdown(self, annotator):
+        return self.page.get_by_role('button', name= annotator )
