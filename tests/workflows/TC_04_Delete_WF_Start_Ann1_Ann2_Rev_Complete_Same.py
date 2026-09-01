@@ -29,55 +29,10 @@ def test_tc04_delete_wf_start_ann1_ann2_rev_complete_same(before_each):
         action_factory = before_each
         dataset_name = test_data_inputs.common_dataset_name
         template_name = test_data_inputs.common_template_name_A
-        workflow_name = test_data_inputs.tc04_delete_workflow_name
+        workflow_name = test_data_inputs.tc03_edit_workflow_name
         project_name = test_data_inputs.tc04_project_name
         description = test_data_inputs.description
-        template_file = test_data_inputs.valid_template_file
-        dataset_files = test_data_inputs.dataset_files
         nodes_list = ["Start", "Annotate", "Annotate", "Review", "Complete"]
-
-        # Create Dataset
-        action_factory.datasets_actions.click_datasets_menu()
-        action_factory.ui_utils.smart_wait()
-        action_factory.datasets_actions.create_dataset(dataset_name=dataset_name, dataset_type_name="Audio", description=description)
-        action_factory.ui_utils.smart_wait()
-        action_factory.ui_utils.click_element(action_factory.page_factory.datasets_page.click_dataset_file_name(dataset_name))
-        action_factory.ui_utils.smart_wait()
-        action_factory.datasets_actions.upload_files_with_uploadBtn(*dataset_files)
-        action_factory.common_actions.validate_toast_msg("1 file added")
-        action_factory.ui_utils.smart_wait()
-
-        # Create Template
-        action_factory.templates_actions.click_templates_menu()
-        action_factory.ui_utils.smart_wait()
-        action_factory.templates_actions.upload_new_template(template_name=template_name, description=description)
-        action_factory.templates_actions.upload_template_files(template_file)
-        action_factory.templates_actions.validate_template_toast_msg("Successfully created Templates")
-        action_factory.ui_utils.smart_wait()
-
-        # Create Workflow
-        action_factory.workflows_actions.click_workflows_menu()
-        action_factory.workflows_actions.create_workflow(workflow_name=workflow_name, description=description)
-        action_factory.ui_utils.smart_wait()
-        for node in nodes_list:
-            action_factory.workflows_actions.click_nodes(node_name=node)
-        action_factory.ui_utils.click_element(action_factory.page_factory.workflows_page.fit_view)
-        action_factory.workflows_actions.apply_template_to_annotate(template_name=template_name, position=0)
-        action_factory.workflows_actions.apply_template_to_annotate(template_name=template_name, position=1)
-        action_factory.ui_utils.smart_wait()
-
-        action_factory.workflows_actions.nodes_connection_flow(
-            node_Name1="annotate", node_index1=2, position1="right", index1=2,
-            node_Name2="annotate", node_index2=1, position2="left", index2=1
-        )
-        action_factory.ui_utils.smart_wait()
-        action_factory.workflows_actions.nodes_connection_flow(
-            node_Name1="review", node_index1=1, position1="right", index1=2,
-            node_Name2="annotate", node_index2=2, position2="left", index2=1
-        )
-        action_factory.ui_utils.smart_wait()
-        action_factory.ui_utils.click_element(action_factory.page_factory.workflows_page.save_btn)
-        action_factory.ui_utils.smart_wait()
 
         # Create Project linking dataset and workflow
         action_factory.projects_actions.click_project_menu()
@@ -90,26 +45,54 @@ def test_tc04_delete_wf_start_ann1_ann2_rev_complete_same(before_each):
         )
         action_factory.ui_utils.smart_wait()
 
+        project_name_list = action_factory.ui_utils.grab_text_from_all(action_factory.page_factory.projects_page.project_names_list)
+        if project_name in project_name_list:
+            status = "Pass"
+            message = f"Project '{project_name}' was created."
+            action_factory.helpers.attach_screenshot(name="TC04ProjectCreated")
+            action_factory.helpers.attach_allure(name="TC_04 Project", text=message)
+            assert True, message
+        else:
+            status = "Fail"
+            message = f"Project '{project_name}' was not created."
+            action_factory.helpers.attach_screenshot(name="TC04ProjectNotCreated")
+            action_factory.helpers.attach_allure(name="TC_04 Project", text=message)
+            assert False, message
+            
         # Attempt to delete linked workflow
         action_factory.workflows_actions.click_workflows_menu()
         action_factory.ui_utils.smart_wait()
         action_factory.workflows_actions.delete_workflow(workflow_name)
         action_factory.ui_utils.smart_wait()
-
         error_visible = action_factory.ui_utils.is_element_visible(action_factory.page_factory.workflows_page.workflow_delete_failed_popup)
-        remaining_workflows = action_factory.ui_utils.grab_text_from_all(action_factory.page_factory.workflows_page.workflow_names_list)
-
-        if error_visible and workflow_name in remaining_workflows:
+        if error_visible:
             status = "Pass"
             message = f"Deletion of linked workflow '{workflow_name}' was blocked as expected."
             action_factory.helpers.attach_screenshot(name="TC04PreventDeleteLinkedWorkflowPass")
-            action_factory.helpers.attach_allure(name="TC_02 Delete Linked Workflow", text=message)
+            action_factory.helpers.attach_allure(name="TC_04 Delete Linked Workflow", text=message)
             assert True, message
         else:
             status = "Fail"
-            message = f"Linked workflow '{workflow_name}' was unexpectedly deleted."
-            action_factory.helpers.attach_screenshot(name="TC02PreventDeleteLinkedWorkflowFailed")
-            action_factory.helpers.attach_allure(name="TC_02 Delete Linked Workflow", text=message)
+            message = f"Deletion of linked workflow '{workflow_name}' was not blocked."
+            action_factory.helpers.attach_screenshot(name="TC04PreventDeleteLinkedWorkflowFailed")
+            action_factory.helpers.attach_allure(name="TC_04 Delete Linked Workflow", text=message)
+            assert False, message
+
+        # Close the popup
+        action_factory.ui_utils.click_element(action_factory.page_factory.files_page.cancel_popup)
+        action_factory.ui_utils.smart_wait()
+        workflow_name_list = action_factory.ui_utils.grab_text_from_all(action_factory.page_factory.workflows_page.workflow_names_list)
+        if workflow_name in workflow_name_list:
+            status = "Pass"
+            message = f"Workflow '{workflow_name}' is still present after attempting to delete."
+            action_factory.helpers.attach_screenshot(name="TC04WorkflowNotDeleted")
+            action_factory.helpers.attach_allure(name="TC_04 Delete Workflow", text=message)
+            assert True, message
+        else:
+            status = "Fail"
+            message = f"Workflow '{workflow_name}' was deleted successfully."
+            action_factory.helpers.attach_screenshot(name="TC04DeleteWorkflowFailed")
+            action_factory.helpers.attach_allure(name="TC_04 Delete Workflow", text=message)
             assert False, message
 
     except Exception as e:

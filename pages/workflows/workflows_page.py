@@ -34,6 +34,7 @@ class WorkflowsPage:
         self.delete_confirmation = page.get_by_role('heading', name= 'Deletion Confirmation' )
         self.workflow_delete_success_popup = self.page.get_by_text('Successfully Deleted Workflow')
         self.workflow_delete_failed_popup = self.page.get_by_text('Failed Deleted Workflow')
+        self.workflow_edit_error = page.get_by_text('This workflow is currently in')
 
     def click_workflow_name(self, workflow_name):
         return self.page.locator("div[class*='workflow-name']").filter(has_text=workflow_name)

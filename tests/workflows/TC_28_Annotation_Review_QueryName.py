@@ -60,7 +60,7 @@ def test_annotation_review_incomplete_save(before_each):
 
         if workflow_name not in workflow_list:
             status = "Pass"
-            message = f"DB Query Names not created in DB '{workflow_name}' was correctly blocked from being created."
+            message = f"DB Query Names created in DB '{workflow_name}' was correctly blocked from being created."
             action_factory.helpers.attach_screenshot(name="DB Query Names not created in DB")
             action_factory.helpers.attach_allure(name="DB Query Names not created in DB", text=message)
             assert True, message

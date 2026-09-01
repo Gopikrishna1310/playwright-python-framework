@@ -57,9 +57,9 @@ class WorkflowsActions:
         target = self.page_factory.workflows_page.get_node_connector(node_Name2, node_index2, position2, index2)
         self.ui_utils.drag_and_drop(source, target)
 
-    def required_annotator(self, total_ann):
-        self.ui_utils.click_element(self.page_factory.workflows_page.required_annotators)
-        self.ui_utils.fill_input(self.page_factory.workflows_page.required_annotators, total_ann)
+    def required_annotator(self, total_ann, index = 0):
+        self.ui_utils.click_element(self.page_factory.workflows_page.required_annotators.nth(index))
+        self.ui_utils.fill_input(self.page_factory.workflows_page.required_annotators.nth(index), total_ann)
 
     def search_workflow_name(self, workflow_name):
         self.ui_utils.click_element(self.page_factory.workflows_page.search_btn)

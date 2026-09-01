@@ -34,19 +34,6 @@ def test_tc11_edit_wf_start_ann1_ann2_complete_diff(before_each):
         template_file = test_data_inputs.valid_template_file
         nodes_list = ["Start", "Annotate", "Annotate", "Complete"]
 
-        # Create Templates
-        action_factory.templates_actions.click_templates_menu()
-        action_factory.ui_utils.smart_wait()
-        action_factory.templates_actions.upload_new_template(template_name=template_name_A, description=description)
-        action_factory.templates_actions.upload_template_files(template_file)
-        action_factory.templates_actions.validate_template_toast_msg("Successfully created Templates")
-        action_factory.ui_utils.smart_wait()
-
-        action_factory.templates_actions.upload_new_template(template_name=template_name_B, description=description)
-        action_factory.templates_actions.upload_template_files(template_file)
-        action_factory.templates_actions.validate_template_toast_msg("Successfully created Templates")
-        action_factory.ui_utils.smart_wait()
-
         # Create Workflow
         action_factory.workflows_actions.click_workflows_menu()
         action_factory.workflows_actions.create_workflow(workflow_name=workflow_name, description=description)
@@ -58,16 +45,23 @@ def test_tc11_edit_wf_start_ann1_ann2_complete_diff(before_each):
         action_factory.workflows_actions.apply_template_to_annotate(template_name=template_name_B, position=1)
         action_factory.ui_utils.smart_wait()
 
-        # Connect Nodes
-        action_factory.workflows_actions.nodes_connection_flow(
-            node_Name1="annotate", node_index1=2, position1="right", index1=2,
-            node_Name2="annotate", node_index2=1, position2="left", index2=1
-        )
-        action_factory.ui_utils.smart_wait()
-
         # Save Workflow
         action_factory.ui_utils.click_element(action_factory.page_factory.workflows_page.save_btn)
         action_factory.ui_utils.smart_wait()
+        workflow_list = action_factory.ui_utils.grab_text_from_all(action_factory.page_factory.workflows_page.workflow_names_list)
+        print("Workflow List: ", workflow_list)
+        if workflow_name in workflow_list:
+            status = "Pass"
+            message = f"Workflow '{workflow_name}' created and saved successfully."
+            action_factory.helpers.attach_screenshot(name="TC11WorkflowCreationPass")
+            action_factory.helpers.attach_allure(name="TC_11 Create Workflow", text=message)
+            assert True, message
+        else:
+            status = "Fail"
+            message = f"Workflow '{workflow_name}' not found after creation."
+            action_factory.helpers.attach_screenshot(name="TC11WorkflowCreationFailed")
+            action_factory.helpers.attach_allure(name="TC_11 Create Workflow", text=message)
+            assert False, message
 
         # Perform Edit Operations
         action_factory.workflows_actions.click_workflows_menu()
@@ -113,8 +107,8 @@ def test_tc11_edit_wf_start_ann1_ann2_complete_diff(before_each):
 
         # Connect new nodes
         action_factory.workflows_actions.nodes_connection_flow(
-            node_Name1="review", node_index1=2, position1="right", index1=2,
-            node_Name2="review", node_index2=1, position2="left", index2=1
+            node_Name1="review", node_index1=1, position1="right", index1=2,
+            node_Name2="annotate", node_index2=2, position2="left", index2=1
         )
         action_factory.ui_utils.smart_wait()
 

@@ -28,24 +28,12 @@ def test_tc17_edit_wf_start_ann_consensus_rev_complete(before_each):
     try:
         action_factory = before_each
         template_name = test_data_inputs.common_template_name_A
+        template_name_A = test_data_inputs.common_template_name_A
+        template_name_B = test_data_inputs.common_template_name_B
         workflow_name = test_data_inputs.tc17_edit_workflow_name
         description = test_data_inputs.description
         template_file = test_data_inputs.valid_template_file
         nodes_list = ["Start", "Annotate", "Review", "Complete"]
-
-        # Create Template
-        action_factory.templates_actions.click_templates_menu()
-        action_factory.ui_utils.smart_wait()
-        action_factory.templates_actions.upload_new_template(template_name=template_name, description=description)
-        action_factory.templates_actions.upload_template_files(template_file)
-        action_factory.templates_actions.validate_template_toast_msg("Successfully created Templates")
-        action_factory.ui_utils.smart_wait()
-
-        # Create Template B
-        action_factory.templates_actions.upload_new_template(template_name=template_name_B, description=description)
-        action_factory.templates_actions.upload_template_files(template_file)
-        action_factory.templates_actions.validate_template_toast_msg("Successfully created Templates")
-        action_factory.ui_utils.smart_wait()
 
         # Create Workflow
         action_factory.workflows_actions.click_workflows_menu()
@@ -71,6 +59,20 @@ def test_tc17_edit_wf_start_ann_consensus_rev_complete(before_each):
         # Save Workflow
         action_factory.ui_utils.click_element(action_factory.page_factory.workflows_page.save_btn)
         action_factory.ui_utils.smart_wait()
+        workflow_list = action_factory.ui_utils.grab_text_from_all(action_factory.page_factory.workflows_page.workflow_names_list)
+        print("Workflow List: ", workflow_list)
+        if workflow_name in workflow_list:
+            status = "Pass"
+            message = f"Workflow '{workflow_name}' created and saved successfully."
+            action_factory.helpers.attach_screenshot(name="TC17WorkflowCreationPass")
+            action_factory.helpers.attach_allure(name="TC_17 Create Workflow", text=message)
+            assert True, message
+        else:
+            status = "Fail"
+            message = f"Workflow '{workflow_name}' not found after creation."
+            action_factory.helpers.attach_screenshot(name="TC17WorkflowCreationFailed")
+            action_factory.helpers.attach_allure(name="TC_17 Create Workflow", text=message)
+            assert False, message
 
         # Perform Edit Operations
         action_factory.workflows_actions.click_workflows_menu()

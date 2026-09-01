@@ -111,3 +111,7 @@ class test_data_inputs:
     # TC_28 Inputs
     tc28_workflow_name = "DROP"
     tc28_description = "DROP"
+
+    # TC_30 Inputs
+    tc30_workflow_name = "AUT_WF_30_Linked_Workflow"
+    tc30_project_name = "AUT_WF_Project_30"

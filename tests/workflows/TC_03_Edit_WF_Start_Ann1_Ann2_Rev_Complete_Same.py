@@ -28,6 +28,8 @@ def test_tc03_edit_wf_start_ann1_ann2_rev_complete_same(before_each):
     try:
         action_factory = before_each
         template_name = test_data_inputs.common_template_name_A
+        template_name_A = test_data_inputs.common_template_name_A
+        template_name_B = test_data_inputs.common_template_name_B
         workflow_name = test_data_inputs.tc03_edit_workflow_name
         description = test_data_inputs.description
         template_file = test_data_inputs.valid_template_file
@@ -44,10 +46,6 @@ def test_tc03_edit_wf_start_ann1_ann2_rev_complete_same(before_each):
         action_factory.workflows_actions.apply_template_to_annotate(template_name=template_name, position=1)
         action_factory.ui_utils.smart_wait()
         # Connect Nodes
-        action_factory.workflows_actions.nodes_connection_flow(
-            node_Name1="annotate", node_index1=2, position1="right", index1=2,
-            node_Name2="annotate", node_index2=1, position2="left", index2=1
-        )
         action_factory.ui_utils.smart_wait()
         action_factory.workflows_actions.nodes_connection_flow(
             node_Name1="review", node_index1=1, position1="right", index1=2,
@@ -63,14 +61,14 @@ def test_tc03_edit_wf_start_ann1_ann2_rev_complete_same(before_each):
         if workflow_name in workflow_list:
             status = "Pass"
             message = f"Workflow '{workflow_name}' created and saved successfully."
-            action_factory.helpers.attach_screenshot(name="TC01WorkflowCreationPass")
-            action_factory.helpers.attach_allure(name="TC_01 Create Workflow", text=message)
+            action_factory.helpers.attach_screenshot(name="TC03WorkflowCreationPass")
+            action_factory.helpers.attach_allure(name="TC_03 Create Workflow", text=message)
             assert True, message
         else:
             status = "Fail"
             message = f"Workflow '{workflow_name}' not found after creation."
-            action_factory.helpers.attach_screenshot(name="TC01WorkflowCreationFailed")
-            action_factory.helpers.attach_allure(name="TC_01 Create Workflow", text=message)
+            action_factory.helpers.attach_screenshot(name="TC03WorkflowCreationFailed")
+            action_factory.helpers.attach_allure(name="TC_03 Create Workflow", text=message)
             assert False, message
 
         # Perform Edit Operations
