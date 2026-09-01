@@ -78,7 +78,7 @@ def test_Create_New_Dataset_Functionality(before_each):
             action_factory.helpers.attach_screenshot(name="DatasetCreationFailed")
             action_factory.helpers.attach_allure(name="Dataset Name", text=f"{Create_New_Dataset}")
             assert False, message
-        action_factory.ui_utils.click_element(action_factory.page_factory.datasets_page.get_dataset_type_option(Create_New_Dataset))
+        action_factory.ui_utils.click_element(action_factory.page_factory.datasets_page.click_dataset_file_name(Create_New_Dataset))
         action_factory.ui_utils.smart_wait()
         files_name_list = action_factory.ui_utils.grab_text_from_all(action_factory.page_factory.datasets_page.files_name_list)
         print(f"Files names list: {files_name_list}")

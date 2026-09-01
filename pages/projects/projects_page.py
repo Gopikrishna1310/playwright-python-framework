@@ -22,6 +22,16 @@ class ProjectsPage:
         self.assign_user_dropdown = page.get_by_role("combobox").first
         self.add_btn = page.get_by_role('button', name='Add' )
         self.assigners_list = page.locator("div[class*='truncate']")
+        self.project_delete_success = page.get_by_text('Successfully Deleted Project')
+        self.project_description_input = page.get_by_role('textbox', name='Description')
+        self.tasks_tab = page.get_by_role('tab', name='Tasks')
+        self.project_datasets_tab = page.get_by_role('tab', name='Datasets')
+        self.add_datasets_btn = page.get_by_role('button', name='Add')
+        self.add_sync_btn = page.get_by_role('button', name='Add/Sync')
+        self.dataset_incompatible_toast = page.get_by_text('incompatible', exact=False)
+        self.file_name_list_Task_tab = page.locator("td[class*='truncate max'] span")
+        self.dataset_name_search = page.get_by_role('textbox', name='Search Datasets')
+        self.dataset_name_list = page.locator("td[class*='medium text']")
         
 
     def select_dropdowns(self, dropdown_name):

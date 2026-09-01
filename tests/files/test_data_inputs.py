@@ -24,3 +24,12 @@ class test_data_inputs:
     Cancel_Dataset_Name = "AUT_CSV_Upload_Cancel"
     Create_New_Dataset = "AUT_New_Dataset_Files"
     Mixed_Files = ["mixed"]
+    upload_files_tabs = ["Upload","Import from S3"]
+    Files_cancel_scenario = ["audio/audio 1.aac","audio/audio 2.flac","audio/audio 3.mp3","audio/audio 4.wav",
+                            "csv/CSV Test data_2.csv","csv/CSV Test data.csv","image/AnyConv.com__web_optimized_1200x800_97kb.tif",
+                            "image/sample-webp-files-sample1.webp","image/web_optimized_1200x800_97kb.bmp",
+                            "image/web_optimized_1200x800_97kb.jpeg","image/web_optimized_1200x800_97kb.png",
+                            "pdf/PDF Test data.pdf","pdf/Resume for Testing.pdf","text/ascii-art.txt",
+                            "text/config conftest.py.txt","text/long-doc.txt","text/multilang.txt","text/sample-1.doc",
+                            "text/sample-1.rtf","text/sample-1.txt","text/sample1.docx","video/Car passing by in a Highway - Royalty Free Stock Video ⧸ (Copyright Free) Download.mp4",
+                            "video/sample_960x540.mkv","video/sample_960x540.mov"]

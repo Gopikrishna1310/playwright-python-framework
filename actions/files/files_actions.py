@@ -49,6 +49,8 @@ class FilesActions:
             raise Exception("Delete popup not found")
 
     def delete_single_files(self, file_Name):
+        if isinstance(file_Name, str):
+            file_Name = [file_Name]
         for file in file_Name:
             self.ui_utils.click_element(self.page_factory.files_page.return_file_checkbox(file).first)
             self.ui_utils.click_element(self.page_factory.files_page.delete_btn)
@@ -86,4 +88,19 @@ class FilesActions:
         self.ui_utils.fill_input(self.page_factory.files_page.dataset_name_enter, dataset_name)
         self.ui_utils.click_element(self.page_factory.files_page.create_button)
         self.ui_utils.smart_wait()
-        
+
+    def cancel_file_upload(self):
+        def handle_dialog(dialog):
+            print(f"Dialog message: {dialog.message}")
+            dialog.accept()
+
+        self.page_factory.files_page.page.once("dialog", handle_dialog)
+        self.ui_utils.element_wait_for(self.page_factory.files_page.cancel_button, state="visible", timeout=10000)
+        self.ui_utils.click_element(self.page_factory.files_page.cancel_button)
+        self.ui_utils.smart_wait()
+
+        # If custom HTML confirmation popup overlay is visible, click OK
+        ok_btn = self.page_factory.files_page.page.get_by_role('button', name='OK', exact=True)
+        if self.ui_utils.is_element_visible(ok_btn, timeout=3000):
+            self.ui_utils.click_element(ok_btn)
+            self.ui_utils.smart_wait()

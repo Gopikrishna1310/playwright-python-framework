@@ -37,3 +37,18 @@ def pytest_runtest_setup(item):
 
     allure.dynamic.parent_suite(folder_name)
     allure.dynamic.suite(file_name)
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_call(item):
+    test_path = os.path.normpath(str(item.fspath))
+    # Get testcase folder name: datasets / files
+    pytest.current_test_folder = os.path.basename(
+        os.path.dirname(test_path)
+    )
+    # Get testcase file name without .py
+    pytest.current_test_file = os.path.splitext(
+        os.path.basename(test_path)
+    )[0]
+    yield
+    pytest.current_test_folder = None
+    pytest.current_test_file = None

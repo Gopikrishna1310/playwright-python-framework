@@ -67,8 +67,8 @@ def test_company_admin_C_flow_test(before_each):
             action_factory.helpers.attach_allure(name="Dataset Name", text=dataset_name)
             assert False, message
 
-        action_factory.ui_utils.click_element(action_factory.page_factory.datasets_page.get_dataset_type_option(dataset_name))
-        action_factory.datasets_actions.upload_files(*Dataset_files_upload)
+        action_factory.ui_utils.click_element(action_factory.page_factory.datasets_page.click_dataset_file_name(dataset_name))
+        action_factory.datasets_actions.upload_files_with_uploadBtn(*Dataset_files_upload)
         action_factory.common_actions.validate_toast_msg("2 files added")
         action_factory.ui_utils.smart_wait()
         files_name_list = action_factory.ui_utils.grab_text_from_all(action_factory.page_factory.datasets_page.files_name_list)
@@ -91,7 +91,7 @@ def test_company_admin_C_flow_test(before_each):
         # Template Creation Functionality
         action_factory.templates_actions.click_templates_menu()
         action_factory.templates_actions.upload_new_template(template_name=template_name)
-        action_factory.templates_actions.upload_files(*Template_files_upload)
+        action_factory.templates_actions.upload_template_files(*Template_files_upload)
         action_factory.ui_utils.smart_wait()
         template_name_list = action_factory.ui_utils.grab_text_from_all(action_factory.page_factory.templates_page.template_names_list)
         print(f"Template names list: {template_name_list}")
@@ -117,7 +117,7 @@ def test_company_admin_C_flow_test(before_each):
         action_factory.ui_utils.click_element(action_factory.page_factory.workflows_page.fit_view)
         action_factory.workflows_actions.apply_template_to_annotate(template_name=template_name)
         action_factory.ui_utils.smart_wait()
-        template_applied = action_factory.ui_utils.grab_text_from_all(action_factory.page_factory.workflows_page.template_name_list)
+        template_applied = action_factory.ui_utils.grab_text_from_all(action_factory.page_factory.workflows_page.template_applied_name)
         if template_name in template_applied:
             status = "Pass"
             message = f"Workflow '{workflow_name}' created successfully with template '{template_name}' applied."

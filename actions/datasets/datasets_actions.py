@@ -23,11 +23,13 @@ class DatasetsActions:
         self.ui_utils.click_element(self.page_factory.datasets_page.get_dataset_type_option(dataset_type_name))
         print(f"Selected dataset type: {dataset_type_name}")
         
-    def create_dataset(self, dataset_name, dataset_type_name):
+    def create_dataset(self, dataset_name, dataset_type_name, description = None):
         self.ui_utils.click_element(self.page_factory.datasets_page.create_dataset_button)
         self.ui_utils.smart_wait()
         self.ui_utils.fill_input(self.page_factory.datasets_page.enter_dataset_name, dataset_name)
         self.dataset_type(dataset_type_name)
+        if description:
+            self.ui_utils.fill_input(self.page_factory.datasets_page.dataset_description, description)
         self.ui_utils.smart_wait()
         self.ui_utils.click_element(self.page_factory.datasets_page.create_button)
         self.ui_utils.element_wait_for(self.page_factory.datasets_page.dataset_cell, state="visible", timeout=10000)
@@ -60,5 +62,28 @@ class DatasetsActions:
         self.ui_utils.smart_wait()
         self.ui_utils.click_element(self.page_factory.datasets_page.upload_button.nth(1))
         self.ui_utils.smart_wait()
+
+    def add_files_dataset(self, files):
+        self.ui_utils.click_element(self.page_factory.datasets_page.add_files)
+        self.ui_utils.smart_wait()
+        self.ui_utils.click_element(self.page_factory.files_page.return_file_checkbox(files))
+        self.ui_utils.click_element(self.page_factory.files_page.add_files)
+        self.ui_utils.smart_wait()
+
+    def delete_dataset(self, dataset_names):
+        if isinstance(dataset_names, str):
+            dataset_names = [dataset_names]
+        for name in dataset_names:
+            self.ui_utils.click_element(self.page_factory.files_page.return_file_checkbox(name).first)
+        self.ui_utils.click_element(self.page_factory.files_page.delete_btn)
+        self.ui_utils.smart_wait()
+        delete_popup = self.ui_utils.wait_for_visible_if_exists(self.page_factory.files_page.delete_confirmation)
+        if delete_popup:
+            self.ui_utils.fill_input(self.page_factory.files_page.delete_text, "DELETE")
+            self.ui_utils.click_element(self.page_factory.files_page.delete_btn)
+            self.ui_utils.smart_wait()
+        else:
+            raise Exception(f"Delete popup not found when attempting to delete dataset: {dataset_names}")
+
 
         

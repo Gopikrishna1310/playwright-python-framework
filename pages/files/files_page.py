@@ -1,4 +1,5 @@
 from utils.ui_utils import UIUtils
+import re
 
 class FilesPage:
     def __init__(self, page):
@@ -10,10 +11,10 @@ class FilesPage:
         self.pagination_dropdown = page.locator("#itemsPerPage")
         self.search_btn = page.get_by_role('textbox', name= 'search' )
         self.files_checkbox = page.locator("*[type='checkbox']")
-        self.delete_btn = page.get_by_role('button', name= 'Delete' )
+        self.delete_btn = page.get_by_role('button', name= 'Delete', exact=True)
         self.delete_confirmation = page.get_by_role('heading', name= 'Deletion Confirmation' )
         self.delete_text = page.get_by_role('textbox')
-        self.cancel_popup = page.get_by_role('button')
+        self.cancel_popup = page.get_by_role("button").filter(has_text=re.compile(r"^$"))
         self.add_to_dataset = page.get_by_role('button', name= 'Add to Dataset' )
         self.add_button = page.get_by_role('button', name= 'Add' )
         self.cancel_button = page.get_by_role('button', name= 'Cancel' )
@@ -23,6 +24,11 @@ class FilesPage:
         self.dataset_name_enter = page.get_by_role('textbox', name= 'Dataset Name*' )
         self.create_button = page.get_by_role('button', name= 'Create' )
         self.add_items_datatype = page.locator("td[class*='center whitespace']")
+        self.files_delete_success_popup = page.get_by_text('Successfully Detached File')
+        self.upload_files_tabs = page.locator("button[class*='pb-2 text']")
+        self.search_datasets_input = page.get_by_role('textbox', name='Search datasets...')
+        self.uploading_btn = page.get_by_role('button', name= '% Uploading' )
+        self.failed_detached_file = page.get_by_text('Failed Detached File', exact=False)
 
     def return_toast_msg_locator(self, toast_msg):
         return self.page.locator("div[class*='center gap-2 text']").filter(has_text=toast_msg)

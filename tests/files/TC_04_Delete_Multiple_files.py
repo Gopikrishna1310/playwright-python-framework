@@ -1,6 +1,7 @@
 import allure
 import pytest
 from actions.action_factory import ActionFactory
+from test_data_inputs import test_data_inputs
 
 @pytest.fixture
 def before_each(page):
@@ -34,9 +35,12 @@ def test_Delete_Multiple_Files(before_each):
     message = ""
     try: 
         action_factory = before_each
+        multiple_file = test_data_inputs.multiple_file
 
         # Delete Multiple Files and Validate the Popups
         action_factory.ui_utils.click_element(action_factory.page_factory.files_page.files_menu)
+        action_factory.datasets_actions.upload_files_with_uploadBtn(*multiple_file)
+        action_factory.ui_utils.smart_wait()
         action_factory.files_actions.delete_multiple_files(5)
         action_factory.ui_utils.smart_wait()
         delete_success = action_factory.ui_utils.wait_for_visible_if_exists(action_factory.page_factory.files_page.return_delete_message("Successfully Deleted Files"))

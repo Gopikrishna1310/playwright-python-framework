@@ -60,6 +60,7 @@ def test_Reviewer_Flow_test(before_each):
         
         action_factory.ui_utils.click_element(action_factory.page_factory.reviewer_page.click_project_name(project_name))
         action_factory.ui_utils.smart_wait()
+        action_factory.ui_utils.smart_wait()
         files_name_list = action_factory.ui_utils.grab_text_from_all(action_factory.page_factory.reviewer_page.files_name_list)
         print(f"Files names list: {files_name_list}")
 
@@ -83,8 +84,7 @@ def test_Reviewer_Flow_test(before_each):
         action_factory.ui_utils.element_wait_for(action_factory.page_factory.reviewer_page.claim_button, timeout = 10000)
         action_factory.ui_utils.click_element(action_factory.page_factory.reviewer_page.claim_button)
         action_factory.ui_utils.smart_wait()
-        action_factory.ui_utils.element_wait_for(action_factory.page_factory.reviewer_page.begin_recording, timeout = 10000)
-        action_factory.ui_utils.smart_wait()
+        action_factory.ui_utils.wait_for_element_with_retry(action_factory.page_factory.reviewer_page.begin_recording, attempts = 5)
         is_visible = action_factory.ui_utils.is_element_visible(action_factory.page_factory.reviewer_page.begin_recording)
         if is_visible:
             status = "Pass"
@@ -163,10 +163,11 @@ def test_Reviewer_Flow_test(before_each):
         action_factory.ui_utils.smart_wait()
         action_factory.ui_utils.click_element(action_factory.page_factory.reviewer_page.click_project_name(Dataset_files_upload[1]))
         action_factory.ui_utils.smart_wait()
+        action_factory.ui_utils.smart_wait()
         action_factory.ui_utils.element_wait_for(action_factory.page_factory.reviewer_page.claim_button, timeout = 10000)
         action_factory.ui_utils.click_element(action_factory.page_factory.reviewer_page.claim_button)
         action_factory.ui_utils.smart_wait()
-        action_factory.ui_utils.element_wait_for(action_factory.page_factory.reviewer_page.begin_recording, timeout = 10000)
+        action_factory.ui_utils.wait_for_element_with_retry(action_factory.page_factory.reviewer_page.begin_recording, attempts = 5)
         is_visible = action_factory.ui_utils.is_element_visible(action_factory.page_factory.reviewer_page.begin_recording)
         if is_visible:
             status = "Pass"

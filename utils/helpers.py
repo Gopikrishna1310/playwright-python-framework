@@ -8,7 +8,10 @@ from dotenv import load_dotenv
 import logging
 import requests
 import re
+import pytest
+
 class Helpers:
+
     def __init__(self, page):
         self.page = page
         self.REPORT_FILE = f"reports/TestResults_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
@@ -59,19 +62,14 @@ class Helpers:
             self.logger.error(f"Failed to capture failure screenshot: {e}")
 
     def attach_screenshot(self, name="screenshot", full_page=False):
-        os.makedirs("screenshots", exist_ok=True)
-        file_name = f"{name}.png"
-        file_path = os.path.join("screenshots", file_name)
         try:
-            self.page.screenshot(
-                path=file_path,
-                full_page=full_page
-            )
-            allure.attach.file(
-                file_path,
-                name=name,
-                attachment_type=allure.attachment_type.PNG
-            )
+            test_folder = getattr(pytest, "current_test_folder", "unknown_folder")
+            test_file = getattr(pytest, "current_test_file", "unknown_test")
+            screenshot_dir = os.path.join("screenshots", test_folder, test_file)
+            os.makedirs(screenshot_dir, exist_ok=True)
+            file_path = os.path.join(screenshot_dir, f"{name}.png")
+            self.page.screenshot(path=file_path, full_page=full_page)
+            allure.attach.file(file_path, name=name, attachment_type=allure.attachment_type.PNG)
             self.logger.info(f"Screenshot saved: {file_path}")
             return file_path
         except Exception as e:
@@ -80,9 +78,7 @@ class Helpers:
 
     def attach_allure(self, name, text):
         try:
-            allure.attach(
-                text,
-                name=name,
+            allure.attach(text, name=name,
                 attachment_type=allure.attachment_type.TEXT
             )
             self.logger.info(f"Allure attachment added: {name}")

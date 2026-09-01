@@ -69,7 +69,7 @@ def test_Search_Files_Name(before_each):
         action_factory.ui_utils.click_element(action_factory.page_factory.datasets_page.datasets_menu)
         action_factory.datasets_actions.create_dataset(dataset_name=search_dataset_name, dataset_type_name=search_dataset_type)
         action_factory.ui_utils.smart_wait()
-        action_factory.ui_utils.click_element(action_factory.page_factory.datasets_page.get_dataset_type_option(search_dataset_name))
+        action_factory.ui_utils.click_element(action_factory.page_factory.datasets_page.click_dataset_file_name(search_dataset_name))
         action_factory.datasets_actions.upload_files_with_uploadBtn(*search_dataset_file)
         action_factory.common_actions.validate_toast_msg("1 file added")
         action_factory.ui_utils.smart_wait()

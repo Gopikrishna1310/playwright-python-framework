@@ -207,6 +207,40 @@ And the uploaded file should be present inside the dataset
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-### Group of Files Upload , with Valid and Invalid Files 
+# TC_09_Upload_Mixed_Files_Valid_Invalid.py
 
+### Scenario: Group of Files Upload with Valid and Invalid Files
+```gherkin
+Given I am on the "Files" page
+When I select mixed files containing both valid and invalid files
+Then I should see an error message "files skipped (incompatible)" for invalid files
+And I click "Upload" to upload valid files
+Then I should see "Files uploaded successfully" message
+```
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+# TC_10_Validate_Upload_Files_Tabs.py
+
+### Scenario: Validate Upload Files modal tabs options
+```gherkin
+Given I am on the "Files" page
+When I click the "Upload Files" button
+Then I should see the upload modal tabs options ["Upload", "Import from S3"]
+```
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+# TC_11_Cancel_File_Upload.py
+
+### Scenario: Cancel file upload operation during active file upload
+```gherkin
+Given I am on the "Files" page
+When I select multiple files to upload and click "Upload"
+And I click the "% Uploading" progress button
+And I click "Cancel" on the upload modal
+And I confirm "OK" on the confirmation prompt "Are you sure you want to cancel the active upload?"
+Then the upload operation should be cancelled
+And the upload modal should be closed
+And the "Upload Files" button should be visible again
+```

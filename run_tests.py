@@ -11,7 +11,7 @@ import sys
 from glob import glob
 
 # Browser Configuration
-HEADLESS = True
+HEADLESS = False
 SLOW_MO = 500
 VIEWPORT = {
     "width": 1260,
@@ -22,7 +22,7 @@ NAVIGATION_TIMEOUT = 30000
 
 
 TEST_FILES = [
-            "tests/files/TC_*.py"
+            "tests/workflows/TC_02*.py"
             ]
 
 if __name__ == "__main__":

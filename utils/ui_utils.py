@@ -100,13 +100,21 @@ class UIUtils:
         """
         Checks if an element specified by the locator is enabled.
         """
-        return locator.is_enabled
+        try:
+            return locator.is_enabled()
+        except Exception as e:
+            self.logger.error(f"Error checking enabled status of element: {e}")
+            return False
 
     def is_element_disabled(self, locator):  
         """
-        Checks if an element specified by the locator is diabled.
+        Checks if an element specified by the locator is disabled.
         """
-        return locator.is_disabled
+        try:
+            return locator.is_disabled()
+        except Exception as e:
+            self.logger.error(f"Error checking disabled status of element: {e}")
+            return True
 
     def grab_text_from_all(self, locator):
         """
@@ -161,4 +169,44 @@ class UIUtils:
             self.logger.info("Smart wait completed successfully.")
         except Exception as e:
             self.logger.error(f"Smart wait failed: {e}")
+            raise
+
+    def scroll_into_view_if_needed(self, locator):
+        """
+        Scrolls the element into the visible area if it is not already visible.
+        """
+        try:
+            locator.scroll_into_view_if_needed()
+            self.logger.info("Element scrolled into view successfully.")
+        except Exception as e:
+            self.logger.error(
+                f"Failed to scroll element into view. Error: {e}"
+            )
+            raise
+
+    def wait_for_element_with_retry(self, locator, attempts=3, timeout=2000):
+        """
+        Waits for an element to become visible with multiple retry attempts.
+        """
+        for attempt in range(1, attempts + 1):
+            try:
+                self.logger.info(f"Waiting for element - Attempt {attempt}/{attempts}")
+                self.element_wait_for(locator, timeout=timeout)
+                if self.is_element_visible(locator):
+                    self.logger.info(f"Element became visible on attempt {attempt}.")
+                    return True
+            except Exception as e:
+                self.logger.warning(f"Element not visible on attempt {attempt}: {e}")
+        self.logger.error(f"Element was not visible after {attempts} attempts.")
+        return False
+
+    def keyboard_press(self, key):
+        """
+        Presses a key on the keyboard.
+        """
+        try:
+            self.page.keyboard.press(key)
+            self.logger.info(f"Key '{key}' pressed successfully.")
+        except Exception as e:
+            self.logger.error(f"Failed to press key: {e}")
             raise

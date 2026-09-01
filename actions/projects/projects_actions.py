@@ -16,10 +16,12 @@ class ProjectsActions:
         else:
             raise Exception("Create Project button is not visible after clicking the Projects menu.")
 
-    def create_project(self, project_name, dataset_name, workflow_name):
+    def create_project(self, project_name, dataset_name, workflow_name, description=None):
         self.ui_utils.click_element(self.page_factory.projects_page.create_project_btn)
         self.ui_utils.smart_wait()
         self.ui_utils.fill_input(self.page_factory.projects_page.project_name_input, project_name)  
+        if description and self.ui_utils.is_element_visible(self.page_factory.projects_page.project_description_input, timeout=2000):
+            self.ui_utils.fill_input(self.page_factory.projects_page.project_description_input, description)
         self.ui_utils.element_wait_for(self.page_factory.projects_page.create_project_page, state="visible", timeout=10000)
         create_project_page_visible = self.ui_utils.is_element_visible(self.page_factory.projects_page.create_project_page, timeout=10000)
         print(f"Create Project page visibility: {create_project_page_visible}")
@@ -67,5 +69,18 @@ class ProjectsActions:
             print("Add user button is visible")
         else:
             raise Exception("Add user button is not visible after adding the user.")
+
+    def delete_project(self, project_name):
+        self.ui_utils.click_element(self.page_factory.files_page.return_file_checkbox(project_name).first)
+        self.ui_utils.click_element(self.page_factory.projects_page.delete_toolbar_btn)
+        self.ui_utils.smart_wait()
+        delete_popup = self.ui_utils.wait_for_visible_if_exists(self.page_factory.files_page.delete_confirmation)
+        if delete_popup:
+            self.ui_utils.fill_input(self.page_factory.files_page.delete_text, "DELETE")
+            self.ui_utils.click_element(self.page_factory.files_page.delete_btn)
+            self.ui_utils.smart_wait()
+        else:
+            raise Exception(f"Delete popup not found when attempting to delete project: {project_name}")
+
 
 

@@ -71,6 +71,20 @@ def test_Cancel_Dataset_Functionality(before_each):
         action_factory.ui_utils.click_element(action_factory.page_factory.files_page.cancel_button)
         action_factory.ui_utils.smart_wait()
 
+        dataset_name_list = action_factory.ui_utils.grab_text_from_all(action_factory.page_factory.datasets_page.dataset_file_name_list)
+        if Cancel_Dataset_Name not in dataset_name_list:
+            status = "Pass"
+            message = f"Dataset '{Cancel_Dataset_Name}' is not associated with the file after cancelling addition."
+            action_factory.helpers.attach_screenshot(name="DatasetNotAssociatedAfterCancel")
+            action_factory.helpers.attach_allure(name="Cancel Dataset Addition", text=message)
+            assert True, message
+        else:
+            status = "Fail"
+            message = f"Dataset '{Cancel_Dataset_Name}' was incorrectly associated with the file after cancelling addition."
+            action_factory.helpers.attach_screenshot(name="DatasetAssociatedAfterCancelFailed")
+            action_factory.helpers.attach_allure(name="Cancel Dataset Addition", text=message)
+            assert False, message
+
         add_dataset_panel = action_factory.ui_utils.is_element_visible(action_factory.page_factory.files_page.add_dataset_Panel)
         print(f"Add to Dataset panel visible: {add_dataset_panel}")
         if not add_dataset_panel:
