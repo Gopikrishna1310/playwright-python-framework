@@ -1,4 +1,3 @@
-from idna import package_data
 from utils.ui_utils import UIUtils
 
 class TemplatesPage:

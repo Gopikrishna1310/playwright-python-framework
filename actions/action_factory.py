@@ -10,6 +10,8 @@ from actions.annotator.annotator_actions import AnnotatorActions
 from actions.reviewer.reviewer_actions import ReviewerActions
 from actions.files.files_actions import FilesActions
 from actions.common.common_actions import CommonActions
+from actions.users.users_actions import UsersActions
+from actions.superuser.superuser_actions import SuperUserActions
 
 
 class ActionFactory:
@@ -27,3 +29,5 @@ class ActionFactory:
         self.reviewer_actions = ReviewerActions(page)
         self.files_actions = FilesActions(page)
         self.common_actions = CommonActions(page)
+        self.users_actions = UsersActions(page)
+        self.superuser_actions = SuperUserActions(page)

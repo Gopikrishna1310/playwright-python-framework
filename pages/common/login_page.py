@@ -23,6 +23,9 @@ class LoginPage:
         self.enter_otp_input = page.get_by_text("Enter OTP", exact=True)
         self.admin_profile_btn = page.locator("div[class*='full shadow-sm']")
         self.switch_role_btn = page.locator("svg[class*='lucide-user']")
+        self.logout_icon = page.locator('div:nth-child(6) > .relative > .p-2')
+        self.logout_btn =  page.get_by_role("button", name="Logout")
+        self.account_not_active_error = page.get_by_text('Your account is not active.')
 
     def get_organization_card(self, company_name):
         return self.page.get_by_role("heading", name=company_name)

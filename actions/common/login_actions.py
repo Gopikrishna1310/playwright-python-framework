@@ -78,3 +78,10 @@ class LoginActions:
             raise Exception("Home sidebar link is not visible after login attempt.")
         self.ui_utils.click_element(self.page_factory.login_page.admin_profile_btn)
         self.ui_utils.smart_wait()
+
+    def perform_logout(self):
+        self.ui_utils.click_element(self.page_factory.login_page.admin_profile_btn)
+        self.ui_utils.smart_wait()
+        self.ui_utils.click_element(self.page_factory.login_page.logout_icon)
+        self.ui_utils.click_element(self.page_factory.login_page.logout_btn)
+        self.ui_utils.smart_wait()

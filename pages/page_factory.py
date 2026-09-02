@@ -6,6 +6,8 @@ from pages.projects.projects_page import ProjectsPage
 from pages.annotator.annotator_page import AnnotatorPage
 from pages.reviewer.reviewer_page import ReviewerPage
 from pages.files.files_page import FilesPage
+from pages.users.users_page import Userspage
+from pages.superuser.superuser_page import SuperUserPage
 
 class PageFactory:
     def __init__(self, page):
@@ -18,3 +20,5 @@ class PageFactory:
         self.annotator_page = AnnotatorPage(page)
         self.reviewer_page = ReviewerPage(page)
         self.files_page = FilesPage(page)
+        self.users_page = Userspage(page)
+        self.superuser_page = SuperUserPage(page)
