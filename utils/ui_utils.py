@@ -28,7 +28,12 @@ class UIUtils:
         """
         Double-clicks an element specified by the locator.
         """
-        self.page.dblclick(locator, timeout=timeout)
+        try:
+            locator.dblclick(timeout=timeout)
+            self.logger.info("Element double clicked successfully.")
+        except Exception as e:
+            self.logger.error(f"Failed to double click element: {e}")
+            raise
 
     def hover_element(self, locator, timeout=3000):
         """

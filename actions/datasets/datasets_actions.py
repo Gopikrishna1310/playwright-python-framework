@@ -62,12 +62,23 @@ class DatasetsActions:
         self.ui_utils.smart_wait()
         self.ui_utils.click_element(self.page_factory.datasets_page.upload_button.nth(1))
         self.ui_utils.smart_wait()
+        loading = self.page_factory.datasets_page.upload_loading
+        self.ui_utils.element_wait_for(loading, state="hidden", timeout=200000)
+        self.ui_utils.smart_wait()
+        
 
-    def add_files_dataset(self, files):
+    def add_files_dataset(self, *files):
+        file_list = []
+        for item in files:
+            if isinstance(item, (list, tuple)):
+                file_list.extend(item)
+            else:
+                file_list.append(item)
         self.ui_utils.click_element(self.page_factory.datasets_page.add_files)
         self.ui_utils.smart_wait()
-        self.ui_utils.click_element(self.page_factory.files_page.return_file_checkbox(files))
-        self.ui_utils.click_element(self.page_factory.files_page.add_files)
+        for file in file_list:
+            self.ui_utils.click_element(self.page_factory.files_page.return_file_checkbox(file))
+        self.ui_utils.click_element(self.page_factory.datasets_page.add_files)
         self.ui_utils.smart_wait()
 
     def delete_dataset(self, dataset_names):

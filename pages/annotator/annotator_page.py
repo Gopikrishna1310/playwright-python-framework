@@ -6,6 +6,7 @@ class AnnotatorPage:
         self.ui_utils = UIUtils(page)
 
         self.frame = page.frame_locator("iframe")
+        self.home_menu = page.get_by_role('link', name="Home")
         self.tasks_menu = page.get_by_role("link", name="Task")
         self.project_name_list = page.locator("span[class*='truncate']")
         self.files_name_list = page.locator("td[class*='truncate']")
@@ -22,7 +23,14 @@ class AnnotatorPage:
         self.back_button = page.locator("button[class*='cursor-pointer']")
         self.search_input = page.get_by_placeholder("search")
         self.transcription = self.frame.locator("tr[class*='reporttr'] td")
+        self.step_forward = self.frame.locator("i[class*='step-forward']")
+        self.step_backward = self.frame.locator("i[class*='step-backward']")
+        self.auto_save_toast = self.page.get_by_text('Auto-saved successfully')
+
 
 
     def click_project_name(self, project_name):
         return self.page.get_by_text(project_name, exact=True)
+    
+    def click_transcription(self, transcription):
+        return self.frame.get_by_role('cell', name= transcription)

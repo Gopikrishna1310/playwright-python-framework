@@ -28,15 +28,15 @@ def test_prevent_delete_file_linked_to_project(before_each):
     try:
         action_factory = before_each
 
-        dataset_name = test_data_inputs.Prevent_dataset_name
+        dataset_name = test_data_inputs.TC_13_Dataset_name
         dataset_type = test_data_inputs.Dataset_Type_Audio
         audio_files = test_data_inputs.Audio_Files
         audio_file_name = [f.split("/")[-1] for f in audio_files][0]
-        template_name = test_data_inputs.Prevent_template_name
+        template_name = test_data_inputs.TC_13_Template_name
         template_files = test_data_inputs.Template_files_upload
-        workflow_name = test_data_inputs.Prevent_workflow_name
+        workflow_name = test_data_inputs.TC_13_WorkFlow_name
         nodes_list = test_data_inputs.Prevent_node_list
-        project_name = test_data_inputs.Prevent_project_name
+        project_name = test_data_inputs.TC_13_Project_name
         description = test_data_inputs.description
 
         # Create dataset and upload audio file

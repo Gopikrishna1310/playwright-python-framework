@@ -115,7 +115,7 @@ def test_Dataset_Files_Add_Functionality(before_each):
         combined_files = Extra_Files + file_names
         print(f"Combined files list: {combined_files}")
         action_factory.datasets_actions.add_files_dataset(*combined_files)
-        action_factory.common_actions.validate_toast_msg("1 file added")
+        action_factory.common_actions.validate_toast_msg("1 file added, 4 files skipped")
         action_factory.ui_utils.smart_wait()
 
         # Validate File is added

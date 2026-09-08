@@ -28,16 +28,16 @@ def test_prevent_add_incompatible_dataset_to_project(before_each):
     try:
         action_factory = before_each
 
-        dataset_text_name = test_data_inputs.Dataset_Name_Text
-        dataset_image_name = test_data_inputs.Dataset_Name_Image
+        dataset_text_name = test_data_inputs.TC_12_Dataset_name
+        dataset_image_name = test_data_inputs.TC_12_Dataset_name
         description = test_data_inputs.description
         text_files = test_data_inputs.Text_Files[:1]
         image_files = test_data_inputs.Image_Single_File
-        template_name = test_data_inputs.Project_Template_Name
+        template_name = test_data_inputs.TC_12_Template_name
         template_files = test_data_inputs.Template_files_upload
-        workflow_name = test_data_inputs.Project_Workflow_Name
+        workflow_name = test_data_inputs.TC_12_WorkFlow_name
         nodes_list = test_data_inputs.Prevent_node_list
-        project_name = test_data_inputs.Project_Integrate_Name
+        project_name = test_data_inputs.TC_12_Project_name
 
         text_file_name = [f.split("/")[-1] for f in text_files][0]
         image_file_name = [f.split("/")[-1] for f in image_files][0]

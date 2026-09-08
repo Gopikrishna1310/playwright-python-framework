@@ -82,5 +82,62 @@ class ProjectsActions:
         else:
             raise Exception(f"Delete popup not found when attempting to delete project: {project_name}")
 
+    def export_and_validate_transcription_json(self, expected_files=None, expected_texts=None, unexpected_texts=None, fields=None):
+        import json, zipfile
+        self.ui_utils.click_element(self.page_factory.projects_page.tasks_table_master_checkbox)
+        self.ui_utils.smart_wait()
+        with self.page_factory.projects_page.page.expect_download() as download_info:
+            self.ui_utils.click_element(self.page_factory.projects_page.export_json_btn)
+        download_path = download_info.value.path()
 
+        raw_items, project_name = [], None
+        if zipfile.is_zipfile(download_path):
+            with zipfile.ZipFile(download_path, "r") as z:
+                raw_items = [json.loads(z.read(f).decode("utf-8")) for f in z.namelist() if f.endswith(".json")]
+        else:
+            with open(download_path, "r", encoding="utf-8") as f:
+                raw_items = [json.load(f)]
 
+        records = []
+        for item in raw_items:
+            if isinstance(item, dict):
+                for k, v in item.items():
+                    if isinstance(v, list):
+                        project_name = project_name or k
+                        records.extend(v)
+                    elif k == "taskFileName":
+                        records.append(item)
+            elif isinstance(item, list):
+                records.extend(item)
+
+        transcriptions = {}
+        for r in records:
+            fname = r.get("taskFileName")
+            if fname:
+                streams = r.get("data", {}).get("annotations", {}).get("streams", {})
+                texts = [t["text"] for t in streams.get("Transcription", []) if isinstance(t, dict) and "text" in t]
+                transcriptions.setdefault(fname, []).extend(texts)
+
+        exp_files = [expected_files] if isinstance(expected_files, str) else (expected_files or [])
+        exp_texts = [expected_texts] if isinstance(expected_texts, str) else (expected_texts or [])
+        unexp_texts = [unexpected_texts] if isinstance(unexpected_texts, str) else (unexpected_texts or [])
+
+        missing = [f for f in exp_files if f not in transcriptions]
+        failed_exp = [f"'{f}' missing '{t}'" for f in exp_files if f in transcriptions for t in exp_texts if not any(t in act for act in transcriptions[f])]
+        failed_unexp = [f"'{f}' contains unexpected '{t}'" for f in exp_files if f in transcriptions for t in unexp_texts if any(t in act for act in transcriptions[f])]
+
+        if missing or failed_exp or failed_unexp:
+            raise Exception(f"Export JSON validation failed. Missing files: {missing}. Missing expected: {failed_exp}. Unexpected present: {failed_unexp}")
+
+        custom_data = {}
+        if fields:
+            for field in ([fields] if isinstance(fields, str) else fields):
+                custom_data[field] = [r.get(field) for r in records if field in r]
+
+        result = dict(transcriptions)
+        result["project_name"] = project_name
+        result["transcriptions"] = transcriptions
+        result["records"] = records
+        result["custom_data"] = custom_data
+        print(result)
+        return result

@@ -24,12 +24,12 @@ class test_data_inputs:
     Template_files_upload = ["template/Updated Audio template.zip"]
     Prevent_node_list = ["Start", "Annotate", "Review", "Complete"]
     datasets_to_test = [
-            {"name": "AUT_Dataset_Text_1", "type": "TEXT", "file": "text/ascii-art.txt"},
-            {"name": "AUT_Dataset_Image", "type": "Image", "file": "image/web_optimized_1200x800_97kb.jpg"},
-            {"name": "AUT_Dataset_Video", "type": "Video", "file": "video/sample_960x540.mkv"},
-            {"name": "AUT_Dataset_PDF", "type": "PDF", "file": "pdf/PDF Test data.pdf"},
-            {"name": "AUT_Dataset_OCR", "type": "Scanned (OCR)", "file": "pdf/Resume for Testing.pdf"},
-            {"name": "AUT_Dataset_CSV", "type": "CSV", "file": "csv/CSV Test data.csv"}
+            {"name": "AUT_Dataset_Text_L", "type": "TEXT", "file": "text/ascii-art.txt"},
+            {"name": "AUT_Dataset_Image_L", "type": "Image", "file": "image/web_optimized_1200x800_97kb.jpg"},
+            {"name": "AUT_Dataset_Video_L", "type": "Video", "file": "video/sample_960x540.mkv"},
+            {"name": "AUT_Dataset_PDF_L", "type": "PDF", "file": "pdf/PDF Test data.pdf"},
+            {"name": "AUT_Dataset_OCR_L", "type": "PDF OCR", "file": "pdf/Resume for Testing.pdf"},
+            {"name": "AUT_Dataset_CSV_L", "type": "CSV", "file": "csv/CSV Test data.csv"}
         ]
     expected_dataset_types = ['Text', 'Image', 'Audio', 'Video', 'PDF', 'Scanned (OCR)', 'CSV']
     search_popup_dataset_name = "AUT_Search_Popup_Dataset"
@@ -42,4 +42,12 @@ class test_data_inputs:
     Project_Workflow_Name = "AUT_Project_Workflow"
     Project_Template_Name = "AUT_Project_Template"
     switch_role_dataset_name = "AUT_Switch_Role_Dataset"
+    TC_12_Dataset_name = "AUT_Dataset_12"
+    TC_12_Template_name = "AUT_Template_12"
+    TC_12_WorkFlow_name = "AUT_WorkFlow_12"
+    TC_12_Project_name = "AUT_Project_12"
+    TC_13_Dataset_name = "AUT_Dataset_13"
+    TC_13_Template_name = "AUT_Template_13"
+    TC_13_WorkFlow_name = "AUT_WorkFlow_13"
+    TC_13_Project_name = "AUT_Project_13"
 

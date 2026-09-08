@@ -1,6 +1,7 @@
 import csv
 from datetime import datetime
 import inspect
+import json
 import os
 import allure
 import time
@@ -58,25 +59,42 @@ class Helpers:
                 name="Last Seen Screenshot",
                 full_page=True
             )
-        except Exception as e:
-            self.logger.error(f"Failed to capture failure screenshot: {e}")
-
-    def attach_screenshot(self, name="screenshot", full_page=False):
+        except Exception as screenshot_error:
+            self.logger.error(f"Failed to capture failure screenshot: {screenshot_error}")
         try:
-            test_folder = getattr(pytest, "current_test_folder", "unknown_folder")
-            test_file = getattr(pytest, "current_test_file", "unknown_test")
-            screenshot_dir = os.path.join("screenshots", test_folder, test_file)
+            self.attach_allure(
+                name="Failure Stack Trace",
+                text=message
+            )
+        except Exception as allure_error:
+            self.logger.error(f"Failed to attach failure log to Allure: {allure_error}")
+
+    def attach_screenshot(self, name="Screenshot", full_page=True):
+        try:
+            test_folder = getattr(pytest, "current_test_folder", "")
+            test_file = getattr(pytest, "current_test_file", "")
+            if test_folder and test_file:
+                screenshot_dir = os.path.join("screenshots", test_folder, test_file)
+            else:
+                screenshot_dir = "screenshots"
             os.makedirs(screenshot_dir, exist_ok=True)
-            file_path = os.path.join(screenshot_dir, f"{name}.png")
-            self.page.screenshot(path=file_path, full_page=full_page)
-            allure.attach.file(file_path, name=name, attachment_type=allure.attachment_type.PNG)
-            self.logger.info(f"Screenshot saved: {file_path}")
+
+            safe_name = re.sub(r'[^\w\-_\. ]', '_', name)
+            file_path = os.path.join(screenshot_dir, f"{safe_name}.png")
+
+            screenshot_bytes = self.page.screenshot(path=file_path, full_page=full_page)
+            allure.attach(
+                screenshot_bytes,
+                name=name,
+                attachment_type=allure.attachment_type.PNG
+            )
+            self.logger.info(f"Screenshot saved locally at: {file_path} and attached to Allure: {name}")
             return file_path
         except Exception as e:
             self.logger.error(f"Failed to capture screenshot. Error: {e}")
             raise
 
-    def attach_allure(self, name, text):
+    def attach_allure(self, name="Attachment", text=""):
         try:
             allure.attach(text, name=name,
                 attachment_type=allure.attachment_type.TEXT
@@ -123,3 +141,49 @@ class Helpers:
                     return otp.group()
             time.sleep(5)
         raise Exception("OTP not received within timeout.")
+
+    def resolve_next_index(self, existing_list, pattern):
+        if "{i}" not in pattern:
+            return 1
+        i = 1
+        while pattern.format(i=i) in existing_list:
+            i += 1
+        return i
+
+    def resolve_latest_index(self, existing_list, pattern):
+        if "{i}" not in pattern:
+            return 1
+        matched_indices = []
+        for name in existing_list:
+            prefix, suffix_pat = pattern.split("{i}", 1)
+            escaped_prefix = re.escape(prefix)
+            escaped_suffix = re.escape(suffix_pat)
+            match = re.match(rf"^{escaped_prefix}(\d+){escaped_suffix}$", name)
+            if match:
+                matched_indices.append(int(match.group(1)))
+        if matched_indices:
+            return max(matched_indices)
+        return 1
+
+    def save_runtime_data(self, key, value, filepath="reports/execution_state.json"):
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        data = {}
+        if os.path.exists(filepath):
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+            except Exception:
+                data = {}
+        data[key] = value
+        with open(filepath, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=4)
+
+    def get_runtime_data(self, key, default=None, filepath="reports/execution_state.json"):
+        if os.path.exists(filepath):
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    return data.get(key, default)
+            except Exception:
+                pass
+        return default

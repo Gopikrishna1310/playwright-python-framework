@@ -23,7 +23,7 @@ class SuperUserPage:
         self.confirm_delete_btn = page.get_by_role('button', name='Delete')
 
     def return_company_cell(self, company_name):
-        return self.page.get_by_role('cell', name=company_name)
+        return self.page.locator(f"td[data-testid='companies-col-name']:has-text('{company_name}')")
 
     def return_role_checkbox(self, role_name):
         return self.page.get_by_role('checkbox', name=role_name)

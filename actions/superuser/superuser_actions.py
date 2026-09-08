@@ -26,7 +26,7 @@ class SuperUserActions:
         self.ui_utils.smart_wait()
 
     def select_company_cell(self, company_name):
-        self.ui_utils.click_element(self.page_factory.superuser_page.return_company_cell(company_name).nth(1))
+        self.ui_utils.click_element(self.page_factory.superuser_page.return_company_cell(company_name).first)
         self.ui_utils.smart_wait()
 
     def check_company_roles(self, roles_list):

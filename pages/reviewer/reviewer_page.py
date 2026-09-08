@@ -1,12 +1,15 @@
 from utils.ui_utils import UIUtils
+import re
 
 class ReviewerPage:
     def __init__(self, page):
         self.page = page
         self.ui_utils = UIUtils(page)
-
+        
+        self.iframe = page.locator("iframe")
         self.frame = page.frame_locator("iframe")
         self.tasks_menu = page.get_by_role("link", name="Task")
+        self.home_menu = page.get_by_role('link', name="Home")
         self.project_name_list = page.locator("span[class*='truncate']")
         self.files_name_list = page.locator("td[class*='truncate']")
         self.email_list = page.locator("div[class*='truncate']")
@@ -26,9 +29,10 @@ class ReviewerPage:
         self.reject_button = page.get_by_role('button', name= 'Reject' )
         self.submit_button = page.get_by_role('button', name= 'Submit' )
         self.annotation_dropdown = page.locator("div[id*='task-annotator']")
+        self.loading_spinner = page.get_by_text(re.compile(r"^(Loading\.\.\.|Loading image and annotations…)$"))
 
     def click_project_name(self, project_name):
         return self.page.get_by_text(project_name, exact=True)
 
     def click_annotator_dropdown(self, annotator):
-        return self.page.get_by_role('button', name= annotator )
+        return self.page.locator(f"ul span:has-text('{annotator}')")
