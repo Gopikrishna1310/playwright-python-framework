@@ -4,25 +4,26 @@ class test_data_inputs:
     legal_name = "AUT New Company Legal"
     email_domain = "autcompany.com"
     default_password = "AUT_Password@123"
+    updated_new_password = "AutomationTest@123"
 
     company_admin_name = "AUT Company Admin"
-    company_admin_email = "admin_{i}@autcompany.com"
+    company_admin_email = "admin1{i}@autcompany.com"
     company_admin_password = "AUT_Password@123"
 
     annotator_1_name = "AUT Annotator 1"
-    annotator_1_email = "annotator1_{i}@autcompany.com"
+    annotator_1_email = "annotator1{i}@autcompany.com"
     annotator_1_password = "AUT_Password@123"
 
     annotator_2_name = "AUT Annotator 2"
-    annotator_2_email = "annotator2_{i}@autcompany.com"
+    annotator_2_email = "annotator2{i}@autcompany.com"
     annotator_2_password = "AUT_Password@123"
 
     reviewer_1_name = "AUT Reviewer 1"
-    reviewer_1_email = "reviewer1_{i}@autcompany.com"
+    reviewer_1_email = "reviewer1{i}@autcompany.com"
     reviewer_1_password = "AUT_Password@123"
 
     reviewer_2_name = "AUT Reviewer 2"
-    reviewer_2_email = "reviewer2_{i}@autcompany.com"
+    reviewer_2_email = "reviewer2{i}@autcompany.com"
     reviewer_2_password = "AUT_Password@123"
 
     # Runtime getters for dynamic company name and user emails

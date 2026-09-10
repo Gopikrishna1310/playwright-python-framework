@@ -71,3 +71,13 @@ class UsersActions:
         self.ui_utils.fill_input(self.page_factory.users_page.delete_confirm_input, "DELETE")
         self.ui_utils.click_element(self.page_factory.users_page.delete_btn)
         self.ui_utils.smart_wait()
+
+    def user_settings_changePassword(self, password):
+        self.ui_utils.click_element(self.page_factory.users_page.new_password)
+        self.ui_utils.fill_input(self.page_factory.users_page.new_password, password)
+        self.ui_utils.click_element(self.page_factory.users_page.confirm_password)
+        self.ui_utils.fill_input(self.page_factory.users_page.confirm_password, password)
+        self.ui_utils.click_element(self.page_factory.users_page.save_changes)
+        self.ui_utils.smart_wait()
+        
+       

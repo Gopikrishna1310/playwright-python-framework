@@ -22,6 +22,14 @@ class LoginActions:
         else:
             raise Exception("Back to Login button is not visible after login attempt.")
 
+    def perform_login_new_user(self, url=None, email=None, password=None):
+        self.ui_utils.goto(url)
+        self.ui_utils.smart_wait()
+        self.ui_utils.fill_input(self.page_factory.login_page.email_input, email)
+        self.ui_utils.fill_input(self.page_factory.login_page.password_input, password)
+        self.ui_utils.click_element(self.page_factory.login_page.sign_in_button)
+        self.ui_utils.smart_wait()
+
     def use_different_email_OTP(self, email_address, password):
         self.ui_utils.click_element(self.page_factory.login_page.different_email_for_otp_link)
         self.ui_utils.element_wait_for(self.page_factory.login_page.email_address_input, state="visible", timeout=10000)

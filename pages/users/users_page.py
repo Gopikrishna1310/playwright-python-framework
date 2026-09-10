@@ -32,6 +32,10 @@ class Userspage:
         self.enable_roles_arrow = page.locator("svg[class*='flex-shrink']")
         self.delete_btn = page.get_by_role('button', name='Delete')
         self.delete_confirm_input = page.get_by_role('textbox')
+        self.new_password = page.get_by_role('textbox', name= 'New Password' )
+        self.save_changes = page.get_by_role('button', name= 'Save Changes' )
+        self.sign_in_btn = page.get_by_role('button', name= 'Sign in' )
+
 
     def return_checkbox_click(self, email_address):
         return self.page.locator("td").filter(has_text=email_address).locator("xpath=preceding-sibling::td//input[@type='checkbox']")

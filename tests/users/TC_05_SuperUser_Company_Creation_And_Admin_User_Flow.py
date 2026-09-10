@@ -41,6 +41,7 @@ def test_superuser_company_creation_and_admin_user_flow(before_each):
         annotator_email = test_data_inputs.annotator_email
         reviewer_name = test_data_inputs.reviewer_name
         reviewer_email = test_data_inputs.reviewer_email
+        updated_new_password = test_data_inputs.updated_new_password
 
         # Super User creates new Company
         action_factory.superuser_actions.click_companies_menu()
@@ -107,7 +108,9 @@ def test_superuser_company_creation_and_admin_user_flow(before_each):
         admin_action_factory = ActionFactory(new_page)
 
         try:
-            admin_action_factory.login_actions.perform_login(url=url, email=admin_email, password=admin_password)
+            admin_action_factory.login_actions.perform_login_new_user(url=url, email=admin_email, password=admin_password)
+            admin_action_factory.users_actions.user_settings_changePassword(updated_new_password)
+            admin_action_factory.login_actions.perform_login(url=url, email=admin_email, password=updated_new_password)
             admin_action_factory.login_actions.use_different_email_OTP(diff_email, diff_email_password)
             admin_action_factory.login_actions.select_organization(company_name, "Company Admin")
             admin_action_factory.ui_utils.smart_wait()

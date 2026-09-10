@@ -36,6 +36,7 @@ def test_create_valid_user_and_login(before_each):
         user_email = test_data_inputs.valid_user_email
         user_password = test_data_inputs.valid_user_password
         user_roles = test_data_inputs.valid_user_roles
+        updated_new_password = test_data_inputs.updated_new_password
 
         # Open Users Menu and Click Create User and create one Valid User 
         action_factory.users_actions.click_users_menu()
@@ -65,7 +66,9 @@ def test_create_valid_user_and_login(before_each):
         new_action_factory = ActionFactory(new_page)
 
         try:
-            new_action_factory.login_actions.perform_login(url=url, email=user_email, password=user_password)
+            new_action_factory.login_actions.perform_login_new_user(url=url, email=user_email, password=user_password)
+            new_action_factory.users_actions.user_settings_changePassword(updated_new_password)
+            new_action_factory.login_actions.perform_login(url=url, email=user_email, password=updated_new_password)
             new_action_factory.login_actions.use_different_email_OTP(diff_email, diff_email_password)
             new_action_factory.login_actions.select_organization(company_Name, "Company Admin")
             new_action_factory.ui_utils.smart_wait()

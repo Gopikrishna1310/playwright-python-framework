@@ -29,6 +29,7 @@ class test_data_inputs:
     new_company_admin_name = "Testing"
     new_company_admin_email = "aaa@automation.com"
     new_company_admin_password = "Testing@123"
+    updated_new_password = "AutomationTest@123"
     annotator_name = "AUT Annotator"
     annotator_email = "annotator@automation.com"
     reviewer_name = "AUT Reviewer"

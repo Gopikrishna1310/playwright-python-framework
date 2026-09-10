@@ -70,6 +70,22 @@ class ProjectsActions:
         else:
             raise Exception("Add user button is not visible after adding the user.")
 
+    def remove_user(self, email_address):
+        self.ui_utils.click_element(self.page_factory.projects_page.get_email_click_checkbox(email_address))
+        self.ui_utils.smart_wait()
+        self.ui_utils.click_element(self.page_factory.projects_page.remove_selected_btn)
+        self.ui_utils.smart_wait()
+        self.ui_utils.fill_input(self.page_factory.projects_page.remove_user_confirm, "DELETE")
+        self.ui_utils.click_element(self.page_factory.projects_page.remove_btn)
+        self.ui_utils.smart_wait()
+        removed_user_toast_visible = self.ui_utils.is_element_visible(self.page_factory.projects_page.removed_user_toast)
+        print(f"Removed user toast visibility: {removed_user_toast_visible}")
+        if removed_user_toast_visible:
+            print("Removed user toast is visible")
+        else:
+            raise Exception("Remove user button is not visible after removing the user.")
+
+
     def delete_project(self, project_name):
         self.ui_utils.click_element(self.page_factory.files_page.return_file_checkbox(project_name).first)
         self.ui_utils.click_element(self.page_factory.projects_page.delete_toolbar_btn)
@@ -141,3 +157,16 @@ class ProjectsActions:
         result["custom_data"] = custom_data
         print(result)
         return result
+
+    def set_projects_pagination(self, num_of_items):
+        self.ui_utils.select_option(self.page_factory.projects_page.pagination_dropdown, str(num_of_items))
+        self.ui_utils.smart_wait()
+
+    def add_dataset_to_project(self, dataset_name):
+        self.ui_utils.click_element(self.page_factory.projects_page.project_datasets_add_btn)
+        self.ui_utils.smart_wait()
+        self.ui_utils.select_option(self.page_factory.projects_page.modal_pagination_select.last, "50")
+        self.ui_utils.click_element(self.page_factory.projects_page.return_Dataset_checkbox_addsync(dataset_name))
+        self.ui_utils.click_element(self.page_factory.projects_page.add_sync_btn)
+        self.ui_utils.smart_wait()
+

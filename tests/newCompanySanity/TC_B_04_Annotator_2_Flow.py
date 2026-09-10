@@ -8,7 +8,7 @@ def before_each(page):
     action_factory = ActionFactory(page)
     url = action_factory.helpers.fetch_dotenv("Execution_url")
     email = test_data_inputs.get_annotator_2_email(action_factory.helpers)
-    password = test_data_inputs.annotator_2_password
+    password = test_data_inputs.updated_new_password
     company_Name = test_data_inputs.get_company_name(action_factory.helpers)
     diff_email = action_factory.helpers.fetch_dotenv("different_email_for_otp")
     diff_email_password = action_factory.helpers.fetch_dotenv(
