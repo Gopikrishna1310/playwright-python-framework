@@ -55,6 +55,7 @@ def test_Reviewer_Flow_test(before_each):
         action_factory.ui_utils.click_element(action_factory.page_factory.reviewer_page.tasks_menu)
         action_factory.ui_utils.smart_wait()
         action_factory.ui_utils.element_wait_for(action_factory.page_factory.reviewer_page.current_task_heading)
+        action_factory.ui_utils.element_wait_for(action_factory.page_factory.annotator_page.project_name_list.nth(0))
         project_list = action_factory.ui_utils.grab_text_from_all(action_factory.page_factory.reviewer_page.project_name_list)
         i = action_factory.helpers.resolve_latest_index(project_list, test_data_inputs.TC_C_project_name)
         project_name = test_data_inputs.TC_C_project_name.format(i=i) if "{i}" in test_data_inputs.TC_C_project_name else test_data_inputs.TC_C_project_name

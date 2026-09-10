@@ -49,6 +49,7 @@ def test_company_admin_B_flow_test(before_each):
         annotator_email = test_data_inputs.get_annotator_1_email(action_factory.helpers)
         annotator_Username_2 = test_data_inputs.get_annotator_2_email(action_factory.helpers)
         reviewer_email = test_data_inputs.get_reviewer_1_email(action_factory.helpers)
+        reviewer_email_2 = test_data_inputs.get_reviewer_2_email(action_factory.helpers)
         
         # Dataset Creation Functionality
         action_factory.datasets_actions.click_datasets_menu()
@@ -225,10 +226,11 @@ def test_company_admin_B_flow_test(before_each):
         action_factory.projects_actions.add_users(role="Annotator", email_address=annotator_email)
         action_factory.projects_actions.add_users(role="Annotator", email_address=annotator_Username_2)
         action_factory.projects_actions.add_users(role="Reviewer", email_address=reviewer_email)
+        action_factory.projects_actions.add_users(role="Reviewer", email_address=reviewer_email_2)
         action_factory.ui_utils.smart_wait()
         assigners_list = action_factory.ui_utils.grab_text_from_all(action_factory.page_factory.projects_page.assigners_list)
         print(f"Assigners list: {assigners_list}")
-        if annotator_email in assigners_list and reviewer_email in assigners_list and annotator_Username_2 in assigners_list:
+        if annotator_email in assigners_list and reviewer_email in assigners_list and annotator_Username_2 in assigners_list and reviewer_email_2 in assigners_list:
             status = "Pass"
             message = f"Annotator and Reviewer added successfully."
             action_factory.helpers.attach_screenshot(name="Annotator and Reviewer Added")

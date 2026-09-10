@@ -15,8 +15,10 @@ class ReviewerActions:
         self.wait_for_iframe_ready()
 
     def wait_for_iframe_ready(self, timeout=180000):
-        # iframe = self.page_factory.reviewer_page.iframe
+        iframe = self.page_factory.reviewer_page.iframe
         loading = self.page_factory.reviewer_page.loading_spinner
-        self.ui_utils.element_wait_for(loading, state="visible", timeout=timeout)
-        self.ui_utils.element_wait_for(loading, state="hidden", timeout=timeout)
+        visible = self.ui_utils.wait_for_visible_if_exists(loading, timeout=10000)
+        if visible:
+            self.ui_utils.element_wait_for(loading, state="hidden", timeout=timeout)
+            message = "Iframe loaded successfully."
         self.ui_utils.smart_wait()

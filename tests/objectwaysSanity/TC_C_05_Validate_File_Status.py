@@ -40,6 +40,7 @@ def test_Validate_File_status_test(before_each):
 
         action_factory.projects_actions.click_project_menu()
         action_factory.ui_utils.smart_wait()
+        action_factory.ui_utils.element_wait_for(action_factory.page_factory.annotator_page.project_name_list.nth(0))
         project_name_list = action_factory.ui_utils.grab_text_from_all(action_factory.page_factory.projects_page.project_names_list)
         print(f"Project names list: {project_name_list}")
         i = action_factory.helpers.resolve_latest_index(project_name_list, test_data_inputs.TC_C_project_name)
